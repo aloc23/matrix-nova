@@ -837,8 +837,8 @@ class DynamicUIGenerator {
             <li><strong>Total Revenue: €${rental.totalRevenue.toLocaleString()}</strong></li>
           </ul>
         `;
-      } else if (result.typeId === 'capexInvestment' && result.breakdown.benefits) {
-        const benefits = result.breakdown.benefits;
+      } else if (result.typeId === 'capexInvestment' && result.breakdown.revenue && result.breakdown.revenue.benefits) {
+        const benefits = result.breakdown.revenue.benefits;
         breakdownHtml += `
           <h4>CapEx Investment Analysis</h4>
           <ul>
@@ -1071,8 +1071,8 @@ class DynamicUIGenerator {
         </div>`);
       }
     } else if (categoryId === 'capex_investment' || projectTypeId === 'capexInvestment') {
-      if (result.breakdown.benefits) {
-        const benefits = result.breakdown.benefits;
+      if (result.breakdown.revenue && result.breakdown.revenue.benefits) {
+        const benefits = result.breakdown.revenue.benefits;
         const budgetUtilization = result.investment > 0 ? 100 : 0; // Simplified - could be enhanced
         const projectROI = result.investment > 0 ? (benefits.totalBenefits / result.investment * 100) : 0;
         
