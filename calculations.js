@@ -65,6 +65,12 @@ class PLCalculationEngine {
       annualRevenue = this.calculateEcommerceRevenue(revenueConfig, data);
     } else if (projectType.id === 'consulting') {
       annualRevenue = this.calculateConsultingRevenue(revenueConfig, data);
+    } else if (projectType.id === 'workshop') {
+      annualRevenue = this.calculateEducationRevenue(revenueConfig, data);
+    } else if (projectType.id === 'carRental') {
+      annualRevenue = this.calculateRentalRevenue(revenueConfig, data);
+    } else if (projectType.id === 'couponPlatform') {
+      annualRevenue = this.calculatePromotionRevenue(revenueConfig, data);
     } else {
       // Generic revenue calculation - sum all revenue fields
       annualRevenue = this.calculateGenericRevenue(revenueConfig, data);
@@ -193,6 +199,45 @@ class PLCalculationEngine {
     const totalBillableHours = billableHours * weeksPerYear * utilizationRate;
     
     return totalBillableHours * hourlyRate;
+  }
+
+  // Education-specific revenue calculation (workshops, courses)
+  calculateEducationRevenue(config, data) {
+    const studentCapacity = this.getValue(data, 'studentCapacity', 0);
+    const tuitionFee = this.getValue(data, 'tuitionFee', 0);
+    const sessionsPerYear = this.getValue(data, 'sessionsPerYear', 1);
+    const occupancyRate = this.getValue(data, 'occupancyRate', 100) / 100;
+    
+    return studentCapacity * tuitionFee * sessionsPerYear * occupancyRate;
+  }
+
+  // Rental-specific revenue calculation
+  calculateRentalRevenue(config, data) {
+    const vehicles = this.getValue(data, 'vehicles', 0);
+    const dailyRate = this.getValue(data, 'dailyRate', 0);
+    const utilizationRate = this.getValue(data, 'utilizationRate', 100) / 100;
+    const averageRental = this.getValue(data, 'averageRental', 1);
+    
+    // Calculate annual rental days
+    const totalPossibleDays = vehicles * 365;
+    const utilizedDays = totalPossibleDays * utilizationRate;
+    
+    return utilizedDays * dailyRate;
+  }
+
+  // Promotion-specific revenue calculation (coupon platforms)
+  calculatePromotionRevenue(config, data) {
+    const merchants = this.getValue(data, 'merchants', 0);
+    const avgDealValue = this.getValue(data, 'avgDealValue', 0);
+    const dealsPerMonth = this.getValue(data, 'dealsPerMonth', 0);
+    const commission = this.getValue(data, 'commission', 0) / 100;
+    const redemptionRate = this.getValue(data, 'redemptionRate', 100) / 100;
+    
+    const monthlyDeals = merchants * dealsPerMonth;
+    const redeemedDeals = monthlyDeals * redemptionRate;
+    const monthlyRevenue = redeemedDeals * avgDealValue * commission;
+    
+    return monthlyRevenue * 12;
   }
 
   // Calculate total costs (operating + staffing)

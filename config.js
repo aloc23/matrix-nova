@@ -360,7 +360,109 @@ const DEFAULT_PROJECT_TYPES = {
     }
   },
 
-  // Generic business template
+  // Additional business type templates
+  workshop: {
+    id: 'workshop',
+    name: 'Training Workshop',
+    description: 'Educational workshop with course fees and training materials',
+    icon: '🎓',
+    businessType: 'education',
+    categories: {
+      investment: [
+        { id: 'curriculum', name: 'Curriculum Development', type: 'currency', defaultValue: 10000, unit: '€', group: 'Content' },
+        { id: 'materials', name: 'Training Materials', type: 'currency', defaultValue: 5000, unit: '€', group: 'Content' },
+        { id: 'equipment', name: 'Training Equipment', type: 'currency', defaultValue: 8000, unit: '€', group: 'Infrastructure' }
+      ],
+      revenue: [
+        { id: 'studentCapacity', name: 'Students per Session', type: 'number', defaultValue: 20, unit: 'students', group: 'Capacity' },
+        { id: 'tuitionFee', name: 'Tuition Fee per Student', type: 'currency', defaultValue: 500, unit: '€', group: 'Pricing' },
+        { id: 'sessionsPerYear', name: 'Sessions per Year', type: 'number', defaultValue: 24, unit: 'sessions', group: 'Schedule' },
+        { id: 'occupancyRate', name: 'Average Occupancy', type: 'percentage', defaultValue: 85, unit: '%', group: 'Utilization' }
+      ],
+      operating: [
+        { id: 'venue', name: 'Venue Rental/year', type: 'currency', defaultValue: 12000, unit: '€', group: 'Fixed Costs' },
+        { id: 'marketing', name: 'Marketing/year', type: 'currency', defaultValue: 6000, unit: '€', group: 'Variable Costs' },
+        { id: 'insurance', name: 'Insurance/year', type: 'currency', defaultValue: 1500, unit: '€', group: 'Fixed Costs' },
+        { id: 'materials', name: 'Course Materials/year', type: 'currency', defaultValue: 3000, unit: '€', group: 'Variable Costs' }
+      ],
+      staffing: [
+        { id: 'instructors', name: 'Lead Instructors', type: 'number', defaultValue: 2, unit: 'people', group: 'Teaching' },
+        { id: 'instructorSal', name: 'Instructor Fee per Session', type: 'currency', defaultValue: 800, unit: '€', group: 'Teaching' },
+        { id: 'admin', name: 'Admin Staff', type: 'number', defaultValue: 1, unit: 'people', group: 'Administration' },
+        { id: 'adminSal', name: 'Admin Salary', type: 'currency', defaultValue: 25000, unit: '€/year', group: 'Administration' }
+      ]
+    }
+  },
+
+  carRental: {
+    id: 'carRental',
+    name: 'Vehicle Rental',
+    description: 'Vehicle rental business with fleet management',
+    icon: '🚗',
+    businessType: 'rental',
+    categories: {
+      investment: [
+        { id: 'fleet', name: 'Vehicle Fleet', type: 'currency', defaultValue: 200000, unit: '€', group: 'Assets' },
+        { id: 'facility', name: 'Facility Setup', type: 'currency', defaultValue: 15000, unit: '€', group: 'Infrastructure' },
+        { id: 'equipment', name: 'Office Equipment', type: 'currency', defaultValue: 5000, unit: '€', group: 'Infrastructure' }
+      ],
+      revenue: [
+        { id: 'vehicles', name: 'Number of Vehicles', type: 'number', defaultValue: 20, unit: 'vehicles', group: 'Fleet' },
+        { id: 'dailyRate', name: 'Average Daily Rate', type: 'currency', defaultValue: 45, unit: '€/day', group: 'Pricing' },
+        { id: 'utilizationRate', name: 'Fleet Utilization', type: 'percentage', defaultValue: 70, unit: '%', group: 'Utilization' },
+        { id: 'averageRental', name: 'Average Rental Duration', type: 'number', defaultValue: 3, unit: 'days', group: 'Usage' }
+      ],
+      operating: [
+        { id: 'maintenance', name: 'Vehicle Maintenance/year', type: 'currency', defaultValue: 25000, unit: '€', group: 'Vehicle Costs' },
+        { id: 'insurance', name: 'Fleet Insurance/year', type: 'currency', defaultValue: 18000, unit: '€', group: 'Vehicle Costs' },
+        { id: 'fuel', name: 'Fuel Costs/year', type: 'currency', defaultValue: 15000, unit: '€', group: 'Variable Costs' },
+        { id: 'facility', name: 'Facility Costs/year', type: 'currency', defaultValue: 8000, unit: '€', group: 'Fixed Costs' },
+        { id: 'marketing', name: 'Marketing/year', type: 'currency', defaultValue: 5000, unit: '€', group: 'Variable Costs' }
+      ],
+      staffing: [
+        { id: 'manager', name: 'Fleet Manager', type: 'number', defaultValue: 1, unit: 'people', group: 'Management' },
+        { id: 'managerSal', name: 'Manager Salary', type: 'currency', defaultValue: 40000, unit: '€/year', group: 'Management' },
+        { id: 'staff', name: 'Customer Service Staff', type: 'number', defaultValue: 2, unit: 'people', group: 'Operations' },
+        { id: 'staffSal', name: 'Staff Salary', type: 'currency', defaultValue: 28000, unit: '€/year', group: 'Operations' }
+      ]
+    }
+  },
+
+  couponPlatform: {
+    id: 'couponPlatform',
+    name: 'Coupon Platform',
+    description: 'Digital coupon and deal platform with commission-based revenue',
+    icon: '🎟️',
+    businessType: 'promotion',
+    categories: {
+      investment: [
+        { id: 'platform', name: 'Platform Development', type: 'currency', defaultValue: 75000, unit: '€', group: 'Technology' },
+        { id: 'infrastructure', name: 'IT Infrastructure', type: 'currency', defaultValue: 15000, unit: '€', group: 'Technology' },
+        { id: 'marketing', name: 'Launch Marketing', type: 'currency', defaultValue: 25000, unit: '€', group: 'Marketing' }
+      ],
+      revenue: [
+        { id: 'merchants', name: 'Active Merchants', type: 'number', defaultValue: 100, unit: 'merchants', group: 'Partners' },
+        { id: 'avgDealValue', name: 'Average Deal Value', type: 'currency', defaultValue: 50, unit: '€', group: 'Deals' },
+        { id: 'dealsPerMonth', name: 'Deals per Merchant/Month', type: 'number', defaultValue: 20, unit: 'deals', group: 'Volume' },
+        { id: 'commission', name: 'Commission Rate', type: 'percentage', defaultValue: 15, unit: '%', group: 'Revenue' },
+        { id: 'redemptionRate', name: 'Redemption Rate', type: 'percentage', defaultValue: 60, unit: '%', group: 'Performance' }
+      ],
+      operating: [
+        { id: 'hosting', name: 'Platform Hosting/year', type: 'currency', defaultValue: 8000, unit: '€', group: 'Technology' },
+        { id: 'payment', name: 'Payment Processing/year', type: 'currency', defaultValue: 12000, unit: '€', group: 'Financial' },
+        { id: 'marketing', name: 'Digital Marketing/year', type: 'currency', defaultValue: 30000, unit: '€', group: 'Marketing' },
+        { id: 'support', name: 'Customer Support/year', type: 'currency', defaultValue: 15000, unit: '€', group: 'Operations' }
+      ],
+      staffing: [
+        { id: 'bdManager', name: 'Business Development', type: 'number', defaultValue: 2, unit: 'people', group: 'Sales' },
+        { id: 'bdSalary', name: 'BD Manager Salary', type: 'currency', defaultValue: 45000, unit: '€/year', group: 'Sales' },
+        { id: 'techStaff', name: 'Technical Staff', type: 'number', defaultValue: 1, unit: 'people', group: 'Technology' },
+        { id: 'techSalary', name: 'Tech Staff Salary', type: 'currency', defaultValue: 55000, unit: '€/year', group: 'Technology' }
+      ]
+    }
+  },
+
+  // Generic business template (updated)
   generic: {
     id: 'generic',
     name: 'Generic Business',
