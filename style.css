@@ -613,6 +613,297 @@ button:hover {
   margin-bottom: 2rem;
 }
 
+/* Business Type Dropdown */
+.business-type-dropdown-container {
+  margin: 1.5rem 0;
+}
+
+.business-type-label {
+  display: block;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--header-bg);
+  margin-bottom: 0.75rem;
+}
+
+.custom-dropdown {
+  position: relative;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.dropdown-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  background: white;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: 60px;
+  font-size: 1rem;
+}
+
+.dropdown-trigger:hover {
+  border-color: var(--main-color);
+  box-shadow: 0 4px 12px rgba(26, 188, 156, 0.15);
+}
+
+.custom-dropdown[aria-expanded="true"] .dropdown-trigger {
+  border-color: var(--main-color);
+  box-shadow: 0 4px 12px rgba(26, 188, 156, 0.15);
+}
+
+.dropdown-placeholder {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.dropdown-placeholder.has-selection {
+  color: var(--header-bg);
+  font-weight: 600;
+}
+
+.selected-icon {
+  font-size: 1.5rem;
+}
+
+.selected-text {
+  font-size: 1rem;
+}
+
+.dropdown-arrow {
+  font-size: 0.9rem;
+  color: var(--main-color);
+  transition: transform 0.3s ease;
+  font-weight: bold;
+}
+
+.custom-dropdown[aria-expanded="true"] .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid var(--main-color);
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(26, 188, 156, 0.2);
+  z-index: 1000;
+  max-height: 400px;
+  overflow-y: auto;
+  margin-top: 0.5rem;
+  display: none;
+}
+
+.dropdown-option {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid #f8f9fa;
+}
+
+.dropdown-option:last-child {
+  border-bottom: none;
+}
+
+.dropdown-option:hover,
+.dropdown-option:focus {
+  background: rgba(26, 188, 156, 0.1);
+  outline: none;
+}
+
+.dropdown-option.selected {
+  background: linear-gradient(135deg, #e8f5f0, #ffffff);
+  border-left: 4px solid var(--main-color);
+}
+
+.option-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.option-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.option-title {
+  display: block;
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--header-bg);
+  margin-bottom: 0.25rem;
+}
+
+.option-description {
+  display: block;
+  font-size: 0.9rem;
+  color: #666;
+  line-height: 1.3;
+}
+
+/* Selected Business Type Info */
+.selected-business-type-info {
+  margin-top: 1.5rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.selected-type-summary {
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border-left: 4px solid var(--main-color);
+}
+
+.selected-type-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.selected-type-icon {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+}
+
+.selected-type-details h4 {
+  margin: 0 0 0.25rem 0;
+  color: var(--header-bg);
+  font-size: 1.3rem;
+}
+
+.selected-type-details p {
+  margin: 0;
+  color: #666;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.selected-type-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.info-section {
+  background: rgba(26, 188, 156, 0.1);
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.info-section strong {
+  color: var(--main-color);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Legacy business type grid - hide for new dropdown interface */
+.business-type-grid {
+  display: none;
+}
+
+.business-type-card {
+  display: none;
+}
+
+/* Accessibility improvements */
+.custom-dropdown:focus {
+  outline: 2px solid var(--main-color);
+  outline-offset: 2px;
+}
+
+.dropdown-option:focus {
+  outline: 2px solid var(--main-color);
+  outline-offset: -2px;
+}
+
+/* Mobile responsive design */
+@media (max-width: 768px) {
+  .custom-dropdown {
+    max-width: 100%;
+  }
+  
+  .dropdown-trigger {
+    padding: 0.875rem 1rem;
+    min-height: 55px;
+    font-size: 0.95rem;
+  }
+  
+  .dropdown-option {
+    padding: 0.875rem 1rem;
+  }
+  
+  .option-icon {
+    font-size: 1.75rem;
+  }
+  
+  .option-title {
+    font-size: 0.95rem;
+  }
+  
+  .option-description {
+    font-size: 0.85rem;
+  }
+  
+  .selected-type-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+  }
+  
+  .selected-type-info {
+    grid-template-columns: 1fr;
+  }
+  
+  .dropdown-menu {
+    max-height: 300px;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .dropdown-trigger {
+    border-width: 3px;
+  }
+  
+  .dropdown-option.selected {
+    border-left-width: 6px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .dropdown-trigger,
+  .dropdown-option,
+  .dropdown-arrow {
+    transition: none;
+  }
+  
+  .selected-business-type-info {
+    animation: none;
+  }
+}
+
 .business-type-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
