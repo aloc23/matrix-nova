@@ -23,22 +23,36 @@ class DynamicUIGenerator {
         
         <div class="business-type-selector">
           <h3>Step 1: Choose Your Business Type</h3>
-          <div class="business-type-grid">
-            ${Object.values(businessCategories).map(category => `
-              <div class="business-type-card ${this.selectedBusinessType === category.id ? 'selected' : ''}" 
-                   data-business-type="${category.id}"
-                   onclick="dynamicUI.selectBusinessType('${category.id}')">
-                <div class="business-type-icon">${category.icon}</div>
-                <h4>${category.name}</h4>
-                <p>${category.description}</p>
-                <div class="business-type-examples">
-                  <strong>Examples:</strong> ${category.examples.slice(0, 3).join(', ')}
-                </div>
-                <div class="business-type-metrics">
-                  <strong>Key Metrics:</strong> ${category.keyMetrics.slice(0, 2).join(', ')}
-                </div>
+          
+          <div class="business-type-dropdown-container">
+            <label for="business-type-dropdown" class="business-type-label">
+              Business Type:
+            </label>
+            <div class="custom-dropdown" tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="business-type-label">
+              <div class="dropdown-trigger" id="business-type-trigger">
+                <span class="dropdown-placeholder">Select your business type...</span>
+                <span class="dropdown-arrow">▼</span>
               </div>
-            `).join('')}
+              <div class="dropdown-menu" role="listbox" aria-labelledby="business-type-label">
+                ${Object.values(businessCategories).map(category => `
+                  <div class="dropdown-option ${this.selectedBusinessType === category.id ? 'selected' : ''}" 
+                       role="option" 
+                       data-business-type="${category.id}"
+                       aria-selected="${this.selectedBusinessType === category.id ? 'true' : 'false'}"
+                       tabindex="-1">
+                    <span class="option-icon">${category.icon}</span>
+                    <div class="option-content">
+                      <span class="option-title">${category.name}</span>
+                      <span class="option-description">${category.description}</span>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+          
+          <div id="selected-business-type-info" class="selected-business-type-info" style="display: none;">
+            <!-- Selected business type details will be shown here -->
           </div>
         </div>
 
@@ -52,18 +66,214 @@ class DynamicUIGenerator {
         </div>
       </div>
     `;
+    
+    // Initialize dropdown functionality
+    this.initializeBusinessTypeDropdown();
+  }
+
+  // Initialize dropdown functionality
+  initializeBusinessTypeDropdown() {
+    const dropdown = document.querySelector('.custom-dropdown');
+    const trigger = document.getElementById('business-type-trigger');
+    const menu = document.querySelector('.dropdown-menu');
+    const options = document.querySelectorAll('.dropdown-option');
+    
+    if (!dropdown || !trigger || !menu) return;
+    
+    // Toggle dropdown on trigger click
+    trigger.addEventListener('click', (e) => {
+      e.preventDefault();
+      this.toggleDropdown();
+    });
+    
+    // Handle keyboard navigation
+    dropdown.addEventListener('keydown', (e) => {
+      this.handleDropdownKeydown(e);
+    });
+    
+    // Handle option selection
+    options.forEach(option => {
+      option.addEventListener('click', (e) => {
+        e.preventDefault();
+        const businessTypeId = option.dataset.businessType;
+        this.selectBusinessTypeFromDropdown(businessTypeId);
+      });
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!dropdown.contains(e.target)) {
+        this.closeDropdown();
+      }
+    });
+    
+    // Update dropdown if there's already a selection
+    if (this.selectedBusinessType) {
+      this.updateDropdownSelection(this.selectedBusinessType);
+    }
+  }
+  
+  // Toggle dropdown open/close
+  toggleDropdown() {
+    const dropdown = document.querySelector('.custom-dropdown');
+    const menu = document.querySelector('.dropdown-menu');
+    
+    if (!dropdown || !menu) return;
+    
+    const isOpen = dropdown.getAttribute('aria-expanded') === 'true';
+    
+    if (isOpen) {
+      this.closeDropdown();
+    } else {
+      this.openDropdown();
+    }
+  }
+  
+  // Open dropdown
+  openDropdown() {
+    const dropdown = document.querySelector('.custom-dropdown');
+    const menu = document.querySelector('.dropdown-menu');
+    
+    if (!dropdown || !menu) return;
+    
+    dropdown.setAttribute('aria-expanded', 'true');
+    dropdown.classList.add('open');
+    menu.style.display = 'block';
+    
+    // Focus first option
+    const firstOption = menu.querySelector('.dropdown-option');
+    if (firstOption) {
+      firstOption.focus();
+    }
+  }
+  
+  // Close dropdown
+  closeDropdown() {
+    const dropdown = document.querySelector('.custom-dropdown');
+    const menu = document.querySelector('.dropdown-menu');
+    
+    if (!dropdown || !menu) return;
+    
+    dropdown.setAttribute('aria-expanded', 'false');
+    dropdown.classList.remove('open');
+    menu.style.display = 'none';
+  }
+  
+  // Handle keyboard navigation in dropdown
+  handleDropdownKeydown(e) {
+    const menu = document.querySelector('.dropdown-menu');
+    const options = Array.from(document.querySelectorAll('.dropdown-option'));
+    const isOpen = document.querySelector('.custom-dropdown').getAttribute('aria-expanded') === 'true';
+    
+    switch (e.key) {
+      case 'Enter':
+      case ' ':
+        e.preventDefault();
+        if (!isOpen) {
+          this.openDropdown();
+        } else {
+          const focused = document.activeElement;
+          if (focused && focused.classList.contains('dropdown-option')) {
+            const businessTypeId = focused.dataset.businessType;
+            this.selectBusinessTypeFromDropdown(businessTypeId);
+          }
+        }
+        break;
+        
+      case 'Escape':
+        e.preventDefault();
+        this.closeDropdown();
+        document.querySelector('.custom-dropdown').focus();
+        break;
+        
+      case 'ArrowDown':
+        e.preventDefault();
+        if (!isOpen) {
+          this.openDropdown();
+        } else {
+          const currentIndex = options.indexOf(document.activeElement);
+          const nextIndex = currentIndex < options.length - 1 ? currentIndex + 1 : 0;
+          options[nextIndex].focus();
+        }
+        break;
+        
+      case 'ArrowUp':
+        e.preventDefault();
+        if (isOpen) {
+          const currentIndex = options.indexOf(document.activeElement);
+          const prevIndex = currentIndex > 0 ? currentIndex - 1 : options.length - 1;
+          options[prevIndex].focus();
+        }
+        break;
+    }
+  }
+  
+  // Select business type from dropdown
+  selectBusinessTypeFromDropdown(businessTypeId) {
+    this.selectBusinessType(businessTypeId);
+    this.updateDropdownSelection(businessTypeId);
+    this.closeDropdown();
+    this.showSelectedBusinessTypeInfo(businessTypeId);
+  }
+  
+  // Update dropdown visual selection
+  updateDropdownSelection(businessTypeId) {
+    const trigger = document.getElementById('business-type-trigger');
+    const placeholder = trigger.querySelector('.dropdown-placeholder');
+    const options = document.querySelectorAll('.dropdown-option');
+    const businessCategory = window.BUSINESS_TYPE_CATEGORIES[businessTypeId];
+    
+    if (!businessCategory) return;
+    
+    // Update trigger text
+    placeholder.innerHTML = `
+      <span class="selected-icon">${businessCategory.icon}</span>
+      <span class="selected-text">${businessCategory.name}</span>
+    `;
+    placeholder.classList.add('has-selection');
+    
+    // Update option selection states
+    options.forEach(option => {
+      const isSelected = option.dataset.businessType === businessTypeId;
+      option.classList.toggle('selected', isSelected);
+      option.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+    });
+  }
+  
+  // Show selected business type information
+  showSelectedBusinessTypeInfo(businessTypeId) {
+    const infoContainer = document.getElementById('selected-business-type-info');
+    const businessCategory = window.BUSINESS_TYPE_CATEGORIES[businessTypeId];
+    
+    if (!infoContainer || !businessCategory) return;
+    
+    infoContainer.innerHTML = `
+      <div class="selected-type-summary">
+        <div class="selected-type-header">
+          <span class="selected-type-icon">${businessCategory.icon}</span>
+          <div class="selected-type-details">
+            <h4>${businessCategory.name}</h4>
+            <p>${businessCategory.description}</p>
+          </div>
+        </div>
+        <div class="selected-type-info">
+          <div class="info-section">
+            <strong>Examples:</strong> ${businessCategory.examples.slice(0, 4).join(', ')}
+          </div>
+          <div class="info-section">
+            <strong>Key Metrics:</strong> ${businessCategory.keyMetrics.slice(0, 3).join(', ')}
+          </div>
+        </div>
+      </div>
+    `;
+    
+    infoContainer.style.display = 'block';
   }
 
   // Select a business type and show relevant project templates
   selectBusinessType(businessTypeId) {
     this.selectedBusinessType = businessTypeId;
     this.currentStep = 'project-type';
-    
-    // Update visual selection
-    document.querySelectorAll('.business-type-card').forEach(card => {
-      card.classList.remove('selected');
-    });
-    document.querySelector(`[data-business-type="${businessTypeId}"]`).classList.add('selected');
     
     // Show project type selector
     this.showProjectTypeSelector();
