@@ -3,73 +3,362 @@
 
 class DynamicUIGenerator {
   constructor() {
-    this.activeProjectTypes = new Set();
+    this.selectedBusinessType = null;
+    this.selectedProjectType = null;
     this.formData = new Map();
+    this.currentStep = 'business-type'; // 'business-type', 'project-type', 'analysis'
   }
 
-  // Generate the main project type selection interface
-  generateProjectTypeSelector(containerId) {
+  // Generate the main business type selection interface
+  generateBusinessTypeSelector(containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    const allTypes = window.projectTypeManager.getAllProjectTypes();
+    const businessCategories = window.BUSINESS_TYPE_CATEGORIES;
     
     container.innerHTML = `
-      <div class="project-type-selector">
-        <h3>Select Project Types</h3>
-        <div class="project-type-grid">
-          ${Object.values(allTypes).map(type => `
-            <div class="project-type-card" data-type-id="${type.id}">
-              <div class="project-type-icon">${type.icon || '📊'}</div>
-              <h4>${type.name}</h4>
-              <p>${type.description}</p>
-              <label>
-                <input type="checkbox" value="${type.id}" ${this.activeProjectTypes.has(type.id) ? 'checked' : ''}>
-                Include in Analysis
-              </label>
-            </div>
-          `).join('')}
+      <div class="business-analytics-container">
+        <h2>Business Analytics Tool</h2>
+        <p>Select your business type to access relevant analytics and KPIs tailored to your industry.</p>
+        
+        <div class="business-type-selector">
+          <h3>Step 1: Choose Your Business Type</h3>
+          <div class="business-type-grid">
+            ${Object.values(businessCategories).map(category => `
+              <div class="business-type-card ${this.selectedBusinessType === category.id ? 'selected' : ''}" 
+                   data-business-type="${category.id}"
+                   onclick="dynamicUI.selectBusinessType('${category.id}')">
+                <div class="business-type-icon">${category.icon}</div>
+                <h4>${category.name}</h4>
+                <p>${category.description}</p>
+                <div class="business-type-examples">
+                  <strong>Examples:</strong> ${category.examples.slice(0, 3).join(', ')}
+                </div>
+                <div class="business-type-metrics">
+                  <strong>Key Metrics:</strong> ${category.keyMetrics.slice(0, 2).join(', ')}
+                </div>
+              </div>
+            `).join('')}
+          </div>
         </div>
-        <div class="project-type-actions">
-          <button type="button" onclick="dynamicUI.createCustomProjectType()">Create Custom Type</button>
-          <button type="button" onclick="dynamicUI.importConfiguration()">Import Configuration</button>
-          <button type="button" onclick="dynamicUI.exportConfiguration()">Export Configuration</button>
+
+        <div id="project-type-selector" class="project-type-selector" style="display: none;">
+          <h3>Step 2: Choose Your Specific Business Template</h3>
+          <div id="project-type-options"></div>
+        </div>
+
+        <div id="business-analytics-form" class="business-analytics-form" style="display: none;">
+          <!-- Dynamic form will be generated here -->
         </div>
       </div>
     `;
+  }
 
-    // Add event listeners
-    container.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-      checkbox.addEventListener('change', (e) => {
-        const typeId = e.target.value;
-        if (e.target.checked) {
-          this.addProjectType(typeId);
-        } else {
-          this.removeProjectType(typeId);
-        }
-      });
+  // Select a business type and show relevant project templates
+  selectBusinessType(businessTypeId) {
+    this.selectedBusinessType = businessTypeId;
+    this.currentStep = 'project-type';
+    
+    // Update visual selection
+    document.querySelectorAll('.business-type-card').forEach(card => {
+      card.classList.remove('selected');
+    });
+    document.querySelector(`[data-business-type="${businessTypeId}"]`).classList.add('selected');
+    
+    // Show project type selector
+    this.showProjectTypeSelector();
+  }
+
+  // Show project type templates for the selected business type
+  showProjectTypeSelector() {
+    const projectTypeSelector = document.getElementById('project-type-selector');
+    const projectTypeOptions = document.getElementById('project-type-options');
+    
+    if (!projectTypeSelector || !projectTypeOptions) return;
+    
+    const businessCategory = window.BUSINESS_TYPE_CATEGORIES[this.selectedBusinessType];
+    const projectTypes = window.projectTypeManager.getProjectsByBusinessType(this.selectedBusinessType);
+    
+    projectTypeSelector.style.display = 'block';
+    
+    projectTypeOptions.innerHTML = `
+      <div class="business-type-info">
+        <div class="selected-business-type">
+          <span class="business-icon">${businessCategory.icon}</span>
+          <strong>${businessCategory.name}</strong> - ${businessCategory.description}
+        </div>
+        <div class="key-metrics">
+          <strong>Key Metrics for ${businessCategory.name}:</strong>
+          <ul>
+            ${businessCategory.keyMetrics.map(metric => `<li>${metric}</li>`).join('')}
+          </ul>
+        </div>
+      </div>
+      
+      <div class="project-type-templates">
+        <h4>Available Templates</h4>
+        <div class="project-template-grid">
+          ${projectTypes.map(type => `
+            <div class="project-template-card ${this.selectedProjectType === type.id ? 'selected' : ''}" 
+                 data-project-type="${type.id}"
+                 onclick="dynamicUI.selectProjectType('${type.id}')">
+              <div class="project-icon">${type.icon}</div>
+              <h5>${type.name}</h5>
+              <p>${type.description}</p>
+            </div>
+          `).join('')}
+          
+          <div class="project-template-card create-custom" onclick="dynamicUI.createCustomTemplate()">
+            <div class="project-icon">➕</div>
+            <h5>Create Custom</h5>
+            <p>Create a custom template for your specific business</p>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Auto-select if only one template available
+    if (projectTypes.length === 1) {
+      setTimeout(() => this.selectProjectType(projectTypes[0].id), 100);
+    }
+  }
+
+  // Select a project type and show the analysis form
+  selectProjectType(projectTypeId) {
+    this.selectedProjectType = projectTypeId;
+    this.currentStep = 'analysis';
+    
+    // Update visual selection
+    document.querySelectorAll('.project-template-card').forEach(card => {
+      card.classList.remove('selected');
+    });
+    document.querySelector(`[data-project-type="${projectTypeId}"]`)?.classList.add('selected');
+    
+    // Initialize form data if not exists
+    if (!this.formData.has(projectTypeId)) {
+      const projectType = window.projectTypeManager.getProjectType(projectTypeId);
+      this.initializeFormData(projectTypeId, projectType);
+    }
+    
+    // Show analysis form
+    this.showAnalysisForm();
+  }
+
+  // Show the analysis form for the selected project type
+  showAnalysisForm() {
+    const formContainer = document.getElementById('business-analytics-form');
+    if (!formContainer) return;
+    
+    const projectType = window.projectTypeManager.getProjectType(this.selectedProjectType);
+    const businessCategory = window.BUSINESS_TYPE_CATEGORIES[this.selectedBusinessType];
+    
+    formContainer.style.display = 'block';
+    formContainer.innerHTML = `
+      <div class="analysis-header">
+        <h3>Step 3: ${projectType.name} Analysis</h3>
+        <div class="breadcrumb">
+          <span class="business-type">${businessCategory.icon} ${businessCategory.name}</span>
+          <span class="separator">→</span>
+          <span class="project-type">${projectType.icon} ${projectType.name}</span>
+        </div>
+        <button type="button" class="change-selection-btn" onclick="dynamicUI.resetSelection()">
+          Change Selection
+        </button>
+      </div>
+      
+      <div class="business-insights">
+        <h4>Business Type Insights: ${businessCategory.name}</h4>
+        <div class="insights-grid">
+          <div class="insight-card">
+            <h5>Revenue Model</h5>
+            <p>${this.getRevenueModelDescription(businessCategory.revenueModel)}</p>
+          </div>
+          <div class="insight-card">
+            <h5>Key Success Factors</h5>
+            <ul>
+              ${businessCategory.characteristics.map(char => `<li>${this.formatCharacteristic(char)}</li>`).join('')}
+            </ul>
+          </div>
+        </div>
+      </div>
+      
+      <div class="project-type-form">
+        ${this.generateProjectTypeForm(this.selectedProjectType, projectType)}
+      </div>
+      
+      <div id="${this.selectedProjectType}-summary" class="analysis-summary" aria-live="polite">
+        <!-- Summary will be populated by calculations -->
+      </div>
+      
+      <div class="analysis-actions">
+        <button type="button" class="calculate-btn" onclick="dynamicUI.calculateProjectType('${this.selectedProjectType}')">
+          Calculate ${projectType.name}
+        </button>
+        <button type="button" class="save-scenario-btn" onclick="dynamicUI.saveCurrentScenario()">
+          Save Scenario
+        </button>
+      </div>
+    `;
+    
+    // Auto-calculate on form load
+    setTimeout(() => this.calculateProjectType(this.selectedProjectType), 100);
+  }
+
+  // Reset selection to start over
+  resetSelection() {
+    this.selectedBusinessType = null;
+    this.selectedProjectType = null;
+    this.currentStep = 'business-type';
+    
+    // Hide secondary sections
+    document.getElementById('project-type-selector').style.display = 'none';
+    document.getElementById('business-analytics-form').style.display = 'none';
+    
+    // Reset business type selection
+    document.querySelectorAll('.business-type-card').forEach(card => {
+      card.classList.remove('selected');
     });
   }
 
-  // Add a project type to the active list
-  addProjectType(typeId) {
-    this.activeProjectTypes.add(typeId);
-    this.generateProjectTypeTabs();
-    
-    // Initialize form data if not exists
-    if (!this.formData.has(typeId)) {
-      const projectType = window.projectTypeManager.getProjectType(typeId);
-      this.initializeFormData(typeId, projectType);
-    }
-    
-    this.updateCalculations();
+  // Helper method to get revenue model description
+  getRevenueModelDescription(model) {
+    const descriptions = {
+      'time-based': 'Revenue generated by booking time slots or sessions',
+      'subscription': 'Recurring revenue from membership fees or subscriptions',
+      'event-tickets': 'Revenue from event ticket sales and attendance',
+      'commission': 'Revenue from commissions on transactions or referrals',
+      'product-sales': 'Revenue from selling physical or digital products',
+      'hourly-project': 'Revenue from hourly billing or project-based fees',
+      'tuition-fees': 'Revenue from educational fees and course enrollments',
+      'rental-income': 'Revenue from renting out assets or properties',
+      'mixed': 'Multiple revenue streams combined'
+    };
+    return descriptions[model] || 'Custom revenue model';
   }
 
-  // Remove a project type from the active list
+  // Helper method to format characteristics
+  formatCharacteristic(char) {
+    const formats = {
+      'time_slots': 'Time slot management',
+      'capacity_utilization': 'Capacity utilization optimization',
+      'peak_pricing': 'Peak and off-peak pricing',
+      'scheduling': 'Scheduling and booking systems',
+      'recurring_revenue': 'Recurring revenue management',
+      'member_tiers': 'Membership tier optimization',
+      'retention': 'Customer retention strategies',
+      'growth_rate': 'Growth rate tracking',
+      'ticket_pricing': 'Ticket pricing optimization',
+      'event_capacity': 'Event capacity management',
+      'seasonal_events': 'Seasonal event planning',
+      'speaker_costs': 'Speaker and venue cost management',
+      'redemption_tracking': 'Redemption rate tracking',
+      'campaign_cycles': 'Campaign cycle optimization',
+      'partner_commissions': 'Partner commission management',
+      'conversion_funnels': 'Conversion funnel optimization',
+      'inventory_management': 'Inventory management',
+      'cost_of_goods': 'Cost of goods optimization',
+      'order_fulfillment': 'Order fulfillment efficiency',
+      'product_mix': 'Product mix optimization',
+      'hourly_billing': 'Hourly billing optimization',
+      'project_based': 'Project-based pricing',
+      'consultant_utilization': 'Consultant utilization rates',
+      'client_relationships': 'Client relationship management',
+      'course_curriculum': 'Course curriculum development',
+      'student_capacity': 'Student capacity optimization',
+      'instructor_costs': 'Instructor cost management',
+      'certification': 'Certification and accreditation',
+      'asset_depreciation': 'Asset depreciation management',
+      'maintenance_cycles': 'Maintenance cycle planning',
+      'rental_duration': 'Rental duration optimization',
+      'asset_utilization': 'Asset utilization tracking',
+      'multiple_revenue_streams': 'Multiple revenue stream management',
+      'cross_selling': 'Cross-selling opportunities',
+      'segment_analysis': 'Customer segment analysis',
+      'model_optimization': 'Business model optimization'
+    };
+    return formats[char] || char.replace(/_/g, ' ');
+  }
+
+  // Create custom template
+  createCustomTemplate() {
+    const name = prompt('Enter name for your custom business template:');
+    if (!name) return;
+
+    try {
+      const id = name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+      const baseTemplate = window.projectTypeManager.getProjectType('generic');
+      
+      const customConfig = JSON.parse(JSON.stringify(baseTemplate)); // Deep clone
+      customConfig.id = id;
+      customConfig.name = name;
+      customConfig.description = `Custom ${name} business based on ${this.selectedBusinessType} category`;
+      customConfig.businessType = this.selectedBusinessType;
+      
+      window.projectTypeManager.setProjectType(id, customConfig);
+      
+      // Refresh project type selector
+      this.showProjectTypeSelector();
+      
+      // Auto-select the new template
+      setTimeout(() => this.selectProjectType(id), 100);
+      
+      alert(`Created custom template: ${name}`);
+    } catch (error) {
+      alert(`Failed to create custom template: ${error.message}`);
+    }
+  }
+
+  // Generate the main project type selection interface (legacy method - updated)
+  generateProjectTypeSelector(containerId) {
+    // This is now the main entry point - delegate to business type selector
+    this.generateBusinessTypeSelector(containerId);
+  }
+
+  // Legacy methods for backward compatibility - now redirect to new flow
+  addProjectType(typeId) {
+    // Auto-select business type based on project type
+    const projectType = window.projectTypeManager.getProjectType(typeId);
+    if (projectType && projectType.businessType) {
+      this.selectBusinessType(projectType.businessType);
+      setTimeout(() => this.selectProjectType(typeId), 200);
+    }
+  }
+
   removeProjectType(typeId) {
-    this.activeProjectTypes.delete(typeId);
-    this.generateProjectTypeTabs();
-    this.updateCalculations();
+    // Reset if removing current selection
+    if (this.selectedProjectType === typeId) {
+      this.resetSelection();
+    }
+  }
+
+  // Generate dynamic tabs for active project types (legacy - now shows single analysis)
+  generateProjectTypeTabs() {
+    // This method is now handled by the new business type flow
+    // Keep for backward compatibility but redirect to main tab system
+    if (this.selectedProjectType) {
+      this.updateMainTabs();
+    }
+  }
+
+  // Update main navigation tabs
+  updateMainTabs() {
+    const tabsContainer = document.querySelector('nav.tabs');
+    if (!tabsContainer) return;
+
+    // Clear existing dynamic tabs but keep system tabs
+    const systemTabs = ['project-selector', 'pnl', 'roi', 'scenarios', 'summary', 'gantt'];
+    tabsContainer.querySelectorAll('button').forEach(btn => {
+      const tabId = btn.dataset.tab;
+      if (tabId && !systemTabs.includes(tabId) && !btn.id) {
+        btn.remove();
+      }
+    });
+
+    // If we have a selected project type, we can proceed to other tabs
+    if (this.selectedProjectType) {
+      // Enable other tabs by updating their content
+      this.updateCombinedAnalysis();
+    }
   }
 
   // Initialize form data with default values
@@ -324,13 +613,229 @@ class DynamicUIGenerator {
 
   // Update combined P&L analysis
   updateCombinedAnalysis() {
-    if (this.activeProjectTypes.size === 0) return;
+    if (!this.selectedProjectType) return;
 
-    const activeTypes = Array.from(this.activeProjectTypes);
-    const combined = window.calculationEngine.calculateCombinedPL(activeTypes);
+    const result = window.calculationEngine.getCalculation(this.selectedProjectType);
+    if (!result) return;
+
+    // Create a "combined" analysis with single project for consistency with existing code
+    const combined = {
+      projects: [result],
+      totals: {
+        revenue: result.revenue.annual,
+        costs: result.costs.annual,
+        profit: result.profit,
+        investment: result.investment,
+        roi: result.roi.roiPercentage,
+        paybackYears: result.roi.paybackYears
+      }
+    };
     
     this.updatePnLTab(combined);
     this.updateROITab(combined);
+  }
+
+  // Update calculations for current project type
+  updateCalculations() {
+    if (this.selectedProjectType) {
+      this.calculateProjectType(this.selectedProjectType);
+    }
+  }
+
+  // Calculate a specific project type
+  calculateProjectType(typeId) {
+    const data = this.formData.get(typeId);
+    if (!data) return;
+
+    try {
+      const result = window.calculationEngine.registerProjectType(typeId, data);
+      this.updateProjectTypeSummary(typeId, result);
+      this.updateCombinedAnalysis();
+    } catch (error) {
+      console.error(`Failed to calculate ${typeId}:`, error);
+      alert(`Calculation failed: ${error.message}`);
+    }
+  }
+
+  // Update summary display for a project type
+  updateProjectTypeSummary(typeId, result) {
+    const summaryElement = document.getElementById(`${typeId}-summary`);
+    if (!summaryElement || !result) return;
+
+    const businessCategory = window.BUSINESS_TYPE_CATEGORIES[this.selectedBusinessType];
+    
+    summaryElement.innerHTML = `
+      <h3>Analysis Results</h3>
+      <div class="summary-cards">
+        <div class="summary-card revenue">
+          <h4>Total Revenue</h4>
+          <div class="amount">€${result.revenue.annual.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
+          <div class="period">per year</div>
+        </div>
+        <div class="summary-card costs">
+          <h4>Total Costs</h4>
+          <div class="amount">€${result.costs.annual.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
+          <div class="period">per year</div>
+        </div>
+        <div class="summary-card profit ${result.profit >= 0 ? 'positive' : 'negative'}">
+          <h4>Net Profit</h4>
+          <div class="amount">€${result.profit.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
+          <div class="period">per year</div>
+        </div>
+        <div class="summary-card roi">
+          <h4>ROI</h4>
+          <div class="amount">${result.roi.roiPercentage.toFixed(1)}%</div>
+          <div class="period">annually</div>
+        </div>
+        <div class="summary-card payback">
+          <h4>Payback Period</h4>
+          <div class="amount">${result.roi.paybackYears === Infinity ? '∞' : result.roi.paybackYears}</div>
+          <div class="period">${result.roi.paybackYears === 1 ? 'year' : 'years'}</div>
+        </div>
+      </div>
+      
+      <div class="business-type-kpis">
+        <h4>${businessCategory.name} Key Performance Indicators</h4>
+        ${this.generateBusinessTypeKPIs(result, businessCategory)}
+      </div>
+      
+      ${this.generateBreakdownSummary(result)}
+    `;
+  }
+
+  // Generate business type specific KPIs
+  generateBusinessTypeKPIs(result, businessCategory) {
+    const kpis = [];
+    
+    switch (businessCategory.id) {
+      case 'booking':
+        if (result.breakdown.revenue && result.breakdown.revenue.peak) {
+          kpis.push(`<div class="kpi">
+            <span class="kpi-label">Peak Utilization Rate:</span>
+            <span class="kpi-value">${result.breakdown.revenue.peak.utilization.toFixed(1)}%</span>
+          </div>`);
+          kpis.push(`<div class="kpi">
+            <span class="kpi-label">Total Bookable Hours/Year:</span>
+            <span class="kpi-value">${(result.breakdown.revenue.peak.totalHours + result.breakdown.revenue.offPeak.totalHours).toLocaleString()}</span>
+          </div>`);
+          kpis.push(`<div class="kpi">
+            <span class="kpi-label">Revenue per Hour:</span>
+            <span class="kpi-value">€${((result.revenue.annual) / (result.breakdown.revenue.peak.utilizedHours + result.breakdown.revenue.offPeak.utilizedHours)).toFixed(2)}</span>
+          </div>`);
+        }
+        break;
+        
+      case 'member':
+        if (result.breakdown.revenue && result.breakdown.revenue.memberships) {
+          const memberships = result.breakdown.revenue.memberships;
+          const totalMembers = memberships.weekly.members + memberships.monthly.members + memberships.annual.members;
+          kpis.push(`<div class="kpi">
+            <span class="kpi-label">Total Members:</span>
+            <span class="kpi-value">${totalMembers}</span>
+          </div>`);
+          kpis.push(`<div class="kpi">
+            <span class="kpi-label">Average Revenue per Member:</span>
+            <span class="kpi-value">€${(result.revenue.annual / totalMembers).toFixed(2)}/year</span>
+          </div>`);
+          kpis.push(`<div class="kpi">
+            <span class="kpi-label">Monthly Recurring Revenue:</span>
+            <span class="kpi-value">€${(result.revenue.annual / 12).toLocaleString()}</span>
+          </div>`);
+        }
+        break;
+        
+      case 'event':
+        if (result.formData) {
+          const eventsPerYear = result.formData.eventsPerYear || 0;
+          const capacity = result.formData.capacity || 0;
+          const occupancyRate = result.formData.occupancyRate || 0;
+          
+          kpis.push(`<div class="kpi">
+            <span class="kpi-label">Total Event Capacity/Year:</span>
+            <span class="kpi-value">${(eventsPerYear * capacity).toLocaleString()}</span>
+          </div>`);
+          kpis.push(`<div class="kpi">
+            <span class="kpi-label">Expected Attendance/Year:</span>
+            <span class="kpi-value">${(eventsPerYear * capacity * occupancyRate / 100).toLocaleString()}</span>
+          </div>`);
+          kpis.push(`<div class="kpi">
+            <span class="kpi-label">Revenue per Attendee:</span>
+            <span class="kpi-value">€${(result.revenue.annual / (eventsPerYear * capacity * occupancyRate / 100)).toFixed(2)}</span>
+          </div>`);
+        }
+        break;
+        
+      case 'product':
+        if (result.formData) {
+          const ordersPerMonth = result.formData.ordersPerMonth || 0;
+          const avgOrderValue = result.formData.avgOrderValue || 0;
+          
+          kpis.push(`<div class="kpi">
+            <span class="kpi-label">Orders per Year:</span>
+            <span class="kpi-value">${(ordersPerMonth * 12).toLocaleString()}</span>
+          </div>`);
+          kpis.push(`<div class="kpi">
+            <span class="kpi-label">Average Order Value:</span>
+            <span class="kpi-value">€${avgOrderValue}</span>
+          </div>`);
+          kpis.push(`<div class="kpi">
+            <span class="kpi-label">Gross Margin:</span>
+            <span class="kpi-value">${result.formData.grossMargin || 0}%</span>
+          </div>`);
+        }
+        break;
+        
+      case 'service':
+        if (result.formData) {
+          const billableHours = result.formData.billableHours || 0;
+          const hourlyRate = result.formData.hourlyRate || 0;
+          const weeksPerYear = result.formData.weeksPerYear || 0;
+          
+          kpis.push(`<div class="kpi">
+            <span class="kpi-label">Billable Hours/Year:</span>
+            <span class="kpi-value">${(billableHours * weeksPerYear).toLocaleString()}</span>
+          </div>`);
+          kpis.push(`<div class="kpi">
+            <span class="kpi-label">Hourly Rate:</span>
+            <span class="kpi-value">€${hourlyRate}/hour</span>
+          </div>`);
+          kpis.push(`<div class="kpi">
+            <span class="kpi-label">Utilization Rate:</span>
+            <span class="kpi-value">${result.formData.utilizationRate || 0}%</span>
+          </div>`);
+        }
+        break;
+    }
+    
+    return kpis.length > 0 ? `<div class="kpi-grid">${kpis.join('')}</div>` : '<p>No specific KPIs available for this business type.</p>';
+  }
+
+  // Save current scenario
+  saveCurrentScenario() {
+    if (!this.selectedProjectType) {
+      alert('Please select a project type first');
+      return;
+    }
+    
+    const name = prompt('Enter scenario name:');
+    if (!name) return;
+    
+    try {
+      const scenarios = JSON.parse(localStorage.getItem('scenarios') || '[]');
+      const state = {
+        name: name,
+        businessType: this.selectedBusinessType,
+        projectType: this.selectedProjectType,
+        formData: Object.fromEntries(this.formData),
+        timestamp: Date.now()
+      };
+      
+      scenarios.push(state);
+      localStorage.setItem('scenarios', JSON.stringify(scenarios));
+      alert(`Scenario "${name}" saved successfully`);
+    } catch (error) {
+      alert(`Failed to save scenario: ${error.message}`);
+    }
   }
 
   // Update P&L tab with combined data
@@ -383,8 +888,10 @@ class DynamicUIGenerator {
     const cashFlowBody = document.querySelector('#cashFlowTable tbody');
     if (!cashFlowBody) return;
 
-    const activeTypes = Array.from(this.activeProjectTypes);
-    const cashFlow = window.calculationEngine.generateCashFlow(activeTypes, 12);
+    // Generate cash flow for the single selected project
+    if (!this.selectedProjectType) return;
+    
+    const cashFlow = window.calculationEngine.generateCashFlow([this.selectedProjectType], 12);
     
     cashFlowBody.innerHTML = '';
     for (const month of cashFlow) {

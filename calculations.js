@@ -29,6 +29,7 @@ class PLCalculationEngine {
     const results = {
       typeId,
       typeName: projectType.name,
+      formData: data, // Store form data for KPI calculations
       revenue: this.calculateRevenue(projectType, data),
       costs: this.calculateCosts(projectType, data),
       investment: this.calculateInvestment(projectType, data),
@@ -56,6 +57,20 @@ class PLCalculationEngine {
       annualRevenue = this.calculatePadelRevenue(revenueConfig, data);
     } else if (projectType.id === 'gym') {
       annualRevenue = this.calculateGymRevenue(revenueConfig, data);
+    } else if (projectType.id === 'conference') {
+      annualRevenue = this.calculateEventRevenue(revenueConfig, data);
+    } else if (projectType.id === 'saas') {
+      annualRevenue = this.calculateSaaSRevenue(revenueConfig, data);
+    } else if (projectType.id === 'ecommerce') {
+      annualRevenue = this.calculateEcommerceRevenue(revenueConfig, data);
+    } else if (projectType.id === 'consulting') {
+      annualRevenue = this.calculateConsultingRevenue(revenueConfig, data);
+    } else if (projectType.id === 'workshop') {
+      annualRevenue = this.calculateEducationRevenue(revenueConfig, data);
+    } else if (projectType.id === 'carRental') {
+      annualRevenue = this.calculateRentalRevenue(revenueConfig, data);
+    } else if (projectType.id === 'couponPlatform') {
+      annualRevenue = this.calculatePromotionRevenue(revenueConfig, data);
     } else {
       // Generic revenue calculation - sum all revenue fields
       annualRevenue = this.calculateGenericRevenue(revenueConfig, data);
@@ -129,6 +144,102 @@ class PLCalculationEngine {
     return totalRevenue;
   }
 
+  // Event-specific revenue calculation (conferences, workshops)
+  calculateEventRevenue(config, data) {
+    const capacity = this.getValue(data, 'capacity', 0);
+    const ticketPrice = this.getValue(data, 'ticketPrice', 0);
+    const occupancyRate = this.getValue(data, 'occupancyRate', 100) / 100;
+    const eventsPerYear = this.getValue(data, 'eventsPerYear', 1);
+    const sponsorship = this.getValue(data, 'sponsorship', 0);
+    
+    const ticketRevenue = capacity * ticketPrice * occupancyRate * eventsPerYear;
+    
+    return ticketRevenue + sponsorship;
+  }
+
+  // SaaS-specific revenue calculation
+  calculateSaaSRevenue(config, data) {
+    const basicUsers = this.getValue(data, 'basicUsers', 0);
+    const basicPrice = this.getValue(data, 'basicPrice', 0);
+    const proUsers = this.getValue(data, 'proUsers', 0);
+    const proPrice = this.getValue(data, 'proPrice', 0);
+    const churnRate = this.getValue(data, 'churnRate', 0) / 100;
+    const growthRate = this.getValue(data, 'growthRate', 0) / 100;
+    
+    // Basic calculation: assume average throughout the year
+    // This could be enhanced with month-by-month projections
+    const avgBasicUsers = basicUsers * (1 - churnRate / 2); // Simple approximation
+    const avgProUsers = proUsers * (1 - churnRate / 2);
+    
+    const monthlyRevenue = (avgBasicUsers * basicPrice) + (avgProUsers * proPrice);
+    
+    return monthlyRevenue * 12;
+  }
+
+  // E-commerce revenue calculation
+  calculateEcommerceRevenue(config, data) {
+    const avgOrderValue = this.getValue(data, 'avgOrderValue', 0);
+    const ordersPerMonth = this.getValue(data, 'ordersPerMonth', 0);
+    const grossMargin = this.getValue(data, 'grossMargin', 100) / 100; // Apply margin
+    const returnRate = this.getValue(data, 'returnRate', 0) / 100;
+    
+    const grossRevenue = avgOrderValue * ordersPerMonth * 12;
+    const netRevenue = grossRevenue * (1 - returnRate) * grossMargin;
+    
+    return netRevenue;
+  }
+
+  // Consulting revenue calculation
+  calculateConsultingRevenue(config, data) {
+    const hourlyRate = this.getValue(data, 'hourlyRate', 0);
+    const billableHours = this.getValue(data, 'billableHours', 0);
+    const utilizationRate = this.getValue(data, 'utilizationRate', 100) / 100;
+    const weeksPerYear = this.getValue(data, 'weeksPerYear', 50);
+    
+    const totalBillableHours = billableHours * weeksPerYear * utilizationRate;
+    
+    return totalBillableHours * hourlyRate;
+  }
+
+  // Education-specific revenue calculation (workshops, courses)
+  calculateEducationRevenue(config, data) {
+    const studentCapacity = this.getValue(data, 'studentCapacity', 0);
+    const tuitionFee = this.getValue(data, 'tuitionFee', 0);
+    const sessionsPerYear = this.getValue(data, 'sessionsPerYear', 1);
+    const occupancyRate = this.getValue(data, 'occupancyRate', 100) / 100;
+    
+    return studentCapacity * tuitionFee * sessionsPerYear * occupancyRate;
+  }
+
+  // Rental-specific revenue calculation
+  calculateRentalRevenue(config, data) {
+    const vehicles = this.getValue(data, 'vehicles', 0);
+    const dailyRate = this.getValue(data, 'dailyRate', 0);
+    const utilizationRate = this.getValue(data, 'utilizationRate', 100) / 100;
+    const averageRental = this.getValue(data, 'averageRental', 1);
+    
+    // Calculate annual rental days
+    const totalPossibleDays = vehicles * 365;
+    const utilizedDays = totalPossibleDays * utilizationRate;
+    
+    return utilizedDays * dailyRate;
+  }
+
+  // Promotion-specific revenue calculation (coupon platforms)
+  calculatePromotionRevenue(config, data) {
+    const merchants = this.getValue(data, 'merchants', 0);
+    const avgDealValue = this.getValue(data, 'avgDealValue', 0);
+    const dealsPerMonth = this.getValue(data, 'dealsPerMonth', 0);
+    const commission = this.getValue(data, 'commission', 0) / 100;
+    const redemptionRate = this.getValue(data, 'redemptionRate', 100) / 100;
+    
+    const monthlyDeals = merchants * dealsPerMonth;
+    const redeemedDeals = monthlyDeals * redemptionRate;
+    const monthlyRevenue = redeemedDeals * avgDealValue * commission;
+    
+    return monthlyRevenue * 12;
+  }
+
   // Calculate total costs (operating + staffing)
   calculateCosts(projectType, data) {
     const operatingCosts = this.calculateOperatingCosts(projectType.categories.operating, data);
@@ -150,7 +261,14 @@ class PLCalculationEngine {
     
     for (const field of operatingConfig) {
       if (field.type === 'currency') {
-        totalCosts += this.getValue(data, field.id, field.defaultValue || 0);
+        let cost = this.getValue(data, field.id, field.defaultValue || 0);
+        
+        // Handle per-event costs for event-based businesses
+        if (field.id.includes('event') && data.eventsPerYear) {
+          cost *= this.getValue(data, 'eventsPerYear', 1);
+        }
+        
+        totalCosts += cost;
       }
     }
     
@@ -172,7 +290,14 @@ class PLCalculationEngine {
       }
       
       if (field.id.endsWith('Sal') || field.id.includes('Salary')) {
-        roles.get(baseName).salary = this.getValue(data, field.id, field.defaultValue || 0);
+        let salary = this.getValue(data, field.id, field.defaultValue || 0);
+        
+        // Handle per-event costs for speakers and support staff
+        if (field.id.includes('event') && data.eventsPerYear) {
+          salary *= this.getValue(data, 'eventsPerYear', 1);
+        }
+        
+        roles.get(baseName).salary = salary;
       } else if (field.type === 'number') {
         roles.get(baseName).count = this.getValue(data, field.id, field.defaultValue || 0);
       }
