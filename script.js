@@ -730,12 +730,49 @@ function highlightToday() {
 
 // --- Initialization ---
 window.onload = function () {
+  // Initialize the generic P&L system
+  initializeGenericPLSystem();
+  
+  // Set up tab navigation
   document.querySelectorAll('nav.tabs button').forEach(btn => {
     btn.addEventListener('click', function () {
-      showTab(this.dataset.tab || this.getAttribute('aria-controls'));
+      const tabId = this.dataset.tab;
+      if (tabId) {
+        if (window.dynamicUI && typeof window.dynamicUI.showTab === 'function') {
+          window.dynamicUI.showTab(tabId);
+        } else {
+          showTab(tabId);
+        }
+      }
     });
   });
-  showTab('padel');
+
+  // Initialize project type selector
+  if (window.dynamicUI) {
+    window.dynamicUI.generateProjectTypeSelector('project-selector');
+    
+    // Auto-load default project types for backward compatibility
+    setTimeout(() => {
+      // Check the checkboxes for default types
+      const padelCheckbox = document.querySelector('input[value="padel"]');
+      const gymCheckbox = document.querySelector('input[value="gym"]');
+      
+      if (padelCheckbox) {
+        padelCheckbox.checked = true;
+        padelCheckbox.dispatchEvent(new Event('change'));
+      }
+      
+      if (gymCheckbox) {
+        gymCheckbox.checked = true;
+        gymCheckbox.dispatchEvent(new Event('change'));
+      }
+    }, 200);
+  }
+
+  // Show project selector by default
+  showTab('project-selector');
+
+  // Legacy event listeners (kept for backward compatibility)
   document.getElementById('calculatePadelBtn')?.addEventListener('click', calculatePadel);
   document.getElementById('calculateGymBtn')?.addEventListener('click', calculateGym);
   document.getElementById('includeGym')?.addEventListener('change', updatePnL);
@@ -745,6 +782,8 @@ window.onload = function () {
     document.getElementById('ganttTaskForm').reset();
   });
   document.getElementById('exportGanttCSVBtn')?.addEventListener('click', exportGanttCSV);
+
+  // Initialize legacy calculations for backward compatibility
   calculatePadel();
   calculateGym();
   renderScenarioList?.();
@@ -752,6 +791,27 @@ window.onload = function () {
   renderGanttTaskList();
   drawGantt();
 };
+
+// Initialize the generic P&L system
+function initializeGenericPLSystem() {
+  // Ensure all required components are available
+  if (!window.projectTypeManager) {
+    console.error('Project Type Manager not loaded');
+    return;
+  }
+  
+  if (!window.calculationEngine) {
+    console.error('Calculation Engine not loaded');
+    return;
+  }
+  
+  if (!window.dynamicUI) {
+    console.error('Dynamic UI not loaded');
+    return;
+  }
+  
+  console.log('Generic P&L System initialized successfully');
+}
 document.querySelectorAll('.collapsible-toggle').forEach(btn => {
   btn.addEventListener('click', function() {
     const expanded = this.getAttribute('aria-expanded') === 'true';

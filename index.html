@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Padel Club Investment Planner</title>
+  <title>Generic P&L Investment Planner</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -12,16 +12,18 @@
   <script src="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.min.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.css">
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <script src="config.js" defer></script>
+  <script src="calculations.js" defer></script>
+  <script src="dynamic-ui.js" defer></script>
   <script src="script.js" defer></script>
 </head>
 <body>
   <header>
     <img src="logo.png" alt="Club Logo" id="clubLogo" />
-    <h1>Padel Club Investment Planner</h1>
+    <h1>Generic P&L Investment Planner</h1>
   </header>
   <nav class="tabs" role="tablist">
-    <button type="button" data-tab="padel" class="active">Padel</button>
-    <button type="button" data-tab="gym">Gym</button>
+    <button type="button" data-tab="project-selector" class="active">Projects</button>
     <button type="button" data-tab="pnl">Profit &amp; Loss</button>
     <button type="button" data-tab="roi">ROI</button>
     <button type="button" data-tab="scenarios">Scenarios</button>
@@ -30,8 +32,17 @@
     <button type="button" id="btnFiles" onclick="window.open('https://aloc23.github.io/pci_project_file_viewer/', '_blank')">Files</button>
   </nav>
   <main>
-    <!-- Padel Tab -->
-    <section id="padel" class="tab-content">
+    <!-- Project Type Selection Tab -->
+    <section id="project-selector" class="tab-content">
+      <h2>Project Configuration</h2>
+      <p>Select the types of projects you want to analyze. You can choose from predefined templates or create custom project types.</p>
+      <!-- Dynamic project type selector will be generated here -->
+    </section>
+    
+    <!-- Dynamic project type sections will be inserted here by JavaScript -->
+    
+    <!-- Padel Tab (Legacy) - Hidden by default, kept for backward compatibility -->
+    <section id="padel" class="tab-content hidden legacy-section">
       <h2>Padel Investment &amp; Revenue</h2>
       <div class="section-group">
         <h3>Investment Inputs</h3>
@@ -102,8 +113,8 @@
       <div id="padelSummary" class="summary" aria-live="polite"></div>
       <button id="calculatePadelBtn">Calculate Padel</button>
     </section>
-    <!-- GYM TAB -->
-    <section id="gym" class="tab-content hidden">
+    <!-- GYM TAB (Legacy) - Hidden by default, kept for backward compatibility -->
+    <section id="gym" class="tab-content hidden legacy-section">
       <h2>Gym Investment &amp; Revenue</h2>
       <div class="section-group">
         <h3>Investment Inputs</h3>
@@ -152,7 +163,7 @@
 <section id="pnl" class="tab-content hidden">
   <h2>Profit &amp; Loss Statement</h2>
   <div class="section-group">
-    <label><input type="checkbox" id="includeGym" checked> Include Gym in PnL</label>
+    <p><em>Combined analysis of all selected project types</em></p>
   </div>
   <div id="pnlSummary" class="summary"></div>
   <div class="section-group">
@@ -208,7 +219,7 @@
     <section id="roi" class="tab-content hidden">
       <h2>ROI &amp; Payback</h2>
       <div class="section-group">
-        <label><input type="checkbox" id="includeGymROI" checked> Include Gym in ROI</label>
+        <p><em>ROI analysis for all selected project types</em></p>
         <label>Revenue Adjust (%): <input id="roiRevAdjust" type="range" min="0" max="150" value="100" step="1" oninput="roiRevAdjustLabel.textContent=this.value+'%';updateROI()"><span id="roiRevAdjustLabel">100%</span></label>
         <label>Cost Adjust (%): <input id="roiCostAdjust" type="range" min="0" max="200" value="100" step="1" oninput="roiCostAdjustLabel.textContent=this.value+'%';updateROI()"><span id="roiCostAdjustLabel">100%</span></label>
       </div>
