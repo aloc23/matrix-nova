@@ -124,6 +124,26 @@ const BUSINESS_TYPE_CATEGORIES = {
     keyMetrics: ['Revenue Mix', 'Cross-sell Rate', 'Customer Segment Value', 'Model Efficiency'],
     revenueModel: 'mixed',
     characteristics: ['multiple_revenue_streams', 'cross_selling', 'segment_analysis', 'model_optimization']
+  },
+  'real_estate': {
+    id: 'real_estate',
+    name: 'Real Estate',
+    description: 'Real estate investment and property management businesses',
+    examples: ['Rental properties', 'Commercial real estate', 'Property management', 'Real estate development'],
+    icon: '🏘️',
+    keyMetrics: ['Rental Yield', 'Occupancy Rate', 'Property Value Growth', 'Cash-on-Cash Return'],
+    revenueModel: 'rental-income',
+    characteristics: ['property_management', 'rental_income', 'property_appreciation', 'maintenance_costs', 'tenant_management']
+  },
+  'capex_investment': {
+    id: 'capex_investment',
+    name: 'CapEx Investment',
+    description: 'Capital expenditure investment tracking and management',
+    examples: ['Equipment purchases', 'Infrastructure projects', 'Technology upgrades', 'Facility improvements'],
+    icon: '🏗️',
+    keyMetrics: ['Budget Utilization', 'Project ROI', 'Implementation Timeline', 'Cost Variance'],
+    revenueModel: 'cost-savings',
+    characteristics: ['budget_tracking', 'project_management', 'asset_depreciation', 'cost_savings', 'implementation_phases']
   }
 };
 
@@ -458,6 +478,87 @@ const DEFAULT_PROJECT_TYPES = {
         { id: 'bdSalary', name: 'BD Manager Salary', type: 'currency', defaultValue: 45000, unit: '€/year', group: 'Sales' },
         { id: 'techStaff', name: 'Technical Staff', type: 'number', defaultValue: 1, unit: 'people', group: 'Technology' },
         { id: 'techSalary', name: 'Tech Staff Salary', type: 'currency', defaultValue: 55000, unit: '€/year', group: 'Technology' }
+      ]
+    }
+  },
+
+  // Real Estate Investment template
+  realEstate: {
+    id: 'realEstate',
+    name: 'Real Estate Investment',
+    description: 'Rental property investment with property management features',
+    icon: '🏘️',
+    businessType: 'real_estate',
+    categories: {
+      investment: [
+        { id: 'propertyPrice', name: 'Property Purchase Price', type: 'currency', defaultValue: 250000, unit: '€', group: 'Property Acquisition' },
+        { id: 'closingCosts', name: 'Closing Costs', type: 'currency', defaultValue: 7500, unit: '€', group: 'Property Acquisition' },
+        { id: 'renovationCosts', name: 'Initial Renovation', type: 'currency', defaultValue: 15000, unit: '€', group: 'Property Improvement' },
+        { id: 'furnishingCosts', name: 'Furnishing & Equipment', type: 'currency', defaultValue: 8000, unit: '€', group: 'Property Improvement' }
+      ],
+      revenue: [
+        { id: 'monthlyRent', name: 'Monthly Rent', type: 'currency', defaultValue: 1200, unit: '€/month', group: 'Rental Income' },
+        { id: 'occupancyRate', name: 'Occupancy Rate', type: 'percentage', defaultValue: 90, unit: '%', group: 'Rental Income', description: 'Average percentage of time property is occupied' },
+        { id: 'rentIncrease', name: 'Annual Rent Increase', type: 'percentage', defaultValue: 2, unit: '%', group: 'Rental Income', description: 'Expected yearly rent increase' },
+        { id: 'securityDeposit', name: 'Security Deposit', type: 'currency', defaultValue: 2400, unit: '€', group: 'Additional Income', description: 'One-time security deposit (non-revenue but cash flow)' },
+        { id: 'otherIncome', name: 'Other Income', type: 'currency', defaultValue: 0, unit: '€/year', group: 'Additional Income', description: 'Parking, laundry, pet fees, etc.' }
+      ],
+      operating: [
+        { id: 'propertyTax', name: 'Property Tax', type: 'currency', defaultValue: 2500, unit: '€/year', group: 'Taxes & Insurance' },
+        { id: 'insurance', name: 'Property Insurance', type: 'currency', defaultValue: 800, unit: '€/year', group: 'Taxes & Insurance' },
+        { id: 'maintenance', name: 'Maintenance & Repairs', type: 'currency', defaultValue: 3000, unit: '€/year', group: 'Property Costs' },
+        { id: 'utilities', name: 'Utilities (if owner pays)', type: 'currency', defaultValue: 0, unit: '€/year', group: 'Property Costs' },
+        { id: 'hoaFees', name: 'HOA/Condo Fees', type: 'currency', defaultValue: 0, unit: '€/year', group: 'Property Costs' },
+        { id: 'advertising', name: 'Advertising & Marketing', type: 'currency', defaultValue: 500, unit: '€/year', group: 'Management Costs' },
+        { id: 'legal', name: 'Legal & Professional', type: 'currency', defaultValue: 400, unit: '€/year', group: 'Management Costs' },
+        { id: 'miscellaneous', name: 'Miscellaneous Costs', type: 'currency', defaultValue: 300, unit: '€/year', group: 'Management Costs' }
+      ],
+      staffing: [
+        { id: 'propertyManager', name: 'Property Manager', type: 'boolean', defaultValue: false, group: 'Management', description: 'Hire professional property manager' },
+        { id: 'managementFee', name: 'Management Fee', type: 'percentage', defaultValue: 8, unit: '% of rent', group: 'Management', description: 'Property management fee as % of rental income' },
+        { id: 'handymanHours', name: 'Handyman Hours/Month', type: 'number', defaultValue: 0, unit: 'hours', group: 'Maintenance' },
+        { id: 'handymanRate', name: 'Handyman Hourly Rate', type: 'currency', defaultValue: 25, unit: '€/hour', group: 'Maintenance' }
+      ]
+    }
+  },
+
+  // CapEx Investment template
+  capexInvestment: {
+    id: 'capexInvestment',
+    name: 'CapEx Investment Project',
+    description: 'Capital expenditure tracking with budget management and ROI analysis',
+    icon: '🏗️',
+    businessType: 'capex_investment',
+    categories: {
+      investment: [
+        { id: 'totalBudget', name: 'Total Project Budget', type: 'currency', defaultValue: 100000, unit: '€', group: 'Budget Planning' },
+        { id: 'contingency', name: 'Contingency Fund', type: 'percentage', defaultValue: 10, unit: '% of budget', group: 'Budget Planning' },
+        { id: 'equipmentCosts', name: 'Equipment & Hardware', type: 'currency', defaultValue: 60000, unit: '€', group: 'Cost Breakdown' },
+        { id: 'installationCosts', name: 'Installation & Setup', type: 'currency', defaultValue: 15000, unit: '€', group: 'Cost Breakdown' },
+        { id: 'trainingCosts', name: 'Training & Implementation', type: 'currency', defaultValue: 8000, unit: '€', group: 'Cost Breakdown' },
+        { id: 'otherCosts', name: 'Other Project Costs', type: 'currency', defaultValue: 7000, unit: '€', group: 'Cost Breakdown' }
+      ],
+      revenue: [
+        { id: 'costSavings', name: 'Annual Cost Savings', type: 'currency', defaultValue: 25000, unit: '€/year', group: 'Financial Benefits' },
+        { id: 'revenueIncrease', name: 'Annual Revenue Increase', type: 'currency', defaultValue: 15000, unit: '€/year', group: 'Financial Benefits' },
+        { id: 'efficiencyGains', name: 'Efficiency Improvements', type: 'percentage', defaultValue: 15, unit: '% improvement', group: 'Operational Benefits' },
+        { id: 'qualityImprovement', name: 'Quality Improvement', type: 'percentage', defaultValue: 20, unit: '% improvement', group: 'Operational Benefits' },
+        { id: 'implementationTime', name: 'Implementation Period', type: 'number', defaultValue: 6, unit: 'months', group: 'Timeline' },
+        { id: 'rampUpPeriod', name: 'Ramp-up to Full Benefits', type: 'number', defaultValue: 3, unit: 'months', group: 'Timeline' }
+      ],
+      operating: [
+        { id: 'annualMaintenance', name: 'Annual Maintenance', type: 'currency', defaultValue: 5000, unit: '€/year', group: 'Ongoing Costs' },
+        { id: 'supportContract', name: 'Support Contract', type: 'currency', defaultValue: 3000, unit: '€/year', group: 'Ongoing Costs' },
+        { id: 'insurance', name: 'Equipment Insurance', type: 'currency', defaultValue: 800, unit: '€/year', group: 'Ongoing Costs' },
+        { id: 'utilities', name: 'Additional Utilities', type: 'currency', defaultValue: 1200, unit: '€/year', group: 'Ongoing Costs' },
+        { id: 'consumables', name: 'Consumables & Supplies', type: 'currency', defaultValue: 2000, unit: '€/year', group: 'Ongoing Costs' }
+      ],
+      staffing: [
+        { id: 'projectManager', name: 'Project Manager Hours', type: 'number', defaultValue: 200, unit: 'hours', group: 'Project Team' },
+        { id: 'pmRate', name: 'PM Hourly Rate', type: 'currency', defaultValue: 80, unit: '€/hour', group: 'Project Team' },
+        { id: 'technicalStaff', name: 'Technical Staff Hours', type: 'number', defaultValue: 150, unit: 'hours', group: 'Project Team' },
+        { id: 'techRate', name: 'Technical Hourly Rate', type: 'currency', defaultValue: 60, unit: '€/hour', group: 'Project Team' },
+        { id: 'ongoingStaff', name: 'Ongoing Staff Cost', type: 'currency', defaultValue: 12000, unit: '€/year', group: 'Ongoing Operations' }
       ]
     }
   },
