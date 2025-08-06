@@ -598,3 +598,501 @@ button:hover {
     align-items: center;
   }
 }
+
+/* ===== New Business Analytics Interface Styles ===== */
+
+/* Business Analytics Container */
+.business-analytics-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+/* Business Type Selector */
+.business-type-selector {
+  margin-bottom: 2rem;
+}
+
+.business-type-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.business-type-card {
+  background: linear-gradient(135deg, #ffffff, #f8f9fa);
+  border: 2px solid #e9ecef;
+  border-radius: 16px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.business-type-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--main-color), var(--accent-color));
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.business-type-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(26, 188, 156, 0.15);
+  border-color: var(--main-color);
+}
+
+.business-type-card:hover::before {
+  transform: scaleX(1);
+}
+
+.business-type-card.selected {
+  border-color: var(--main-color);
+  background: linear-gradient(135deg, #e8f5f0, #ffffff);
+  box-shadow: 0 6px 20px rgba(26, 188, 156, 0.2);
+}
+
+.business-type-card.selected::before {
+  transform: scaleX(1);
+}
+
+.business-type-icon {
+  font-size: 3.5rem;
+  text-align: center;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.business-type-card h4 {
+  color: var(--header-bg);
+  margin: 0 0 0.5rem 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.business-type-card p {
+  color: #666;
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+.business-type-examples {
+  background: rgba(26, 188, 156, 0.1);
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.business-type-examples strong {
+  color: var(--main-color);
+}
+
+.business-type-metrics {
+  background: rgba(52, 152, 219, 0.1);
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.business-type-metrics strong {
+  color: #3498db;
+}
+
+/* Project Type Selector (Step 2) */
+.project-type-selector {
+  margin-bottom: 2rem;
+}
+
+.business-type-info {
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.selected-business-type {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.business-icon {
+  font-size: 1.5rem;
+}
+
+.key-metrics {
+  margin-top: 1rem;
+}
+
+.key-metrics ul {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+}
+
+.key-metrics li {
+  background: rgba(26, 188, 156, 0.1);
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: var(--header-bg);
+}
+
+.project-template-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.project-template-card {
+  background: white;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  padding: 1.25rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.project-template-card:hover {
+  border-color: var(--main-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(26, 188, 156, 0.15);
+}
+
+.project-template-card.selected {
+  border-color: var(--main-color);
+  background: linear-gradient(135deg, #e8f5f0, #ffffff);
+}
+
+.project-template-card.create-custom {
+  border-style: dashed;
+  border-color: #6c757d;
+}
+
+.project-template-card.create-custom:hover {
+  border-color: var(--accent-color);
+  background: #f8f9fa;
+}
+
+.project-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.project-template-card h5 {
+  margin: 0 0 0.5rem 0;
+  color: var(--header-bg);
+  font-size: 1.1rem;
+}
+
+.project-template-card p {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0;
+  line-height: 1.3;
+}
+
+/* Analysis Form (Step 3) */
+.business-analytics-form {
+  margin-top: 2rem;
+}
+
+.analysis-header {
+  background: linear-gradient(135deg, var(--main-color), var(--accent-color));
+  color: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.analysis-header h3 {
+  margin: 0 0 0.75rem 0;
+  font-size: 1.5rem;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  opacity: 0.9;
+}
+
+.separator {
+  opacity: 0.7;
+}
+
+.change-selection-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.change-selection-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.business-insights {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.business-insights h4 {
+  margin: 0 0 1rem 0;
+  color: var(--header-bg);
+  font-size: 1.2rem;
+}
+
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.insight-card {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.insight-card h5 {
+  margin: 0 0 0.5rem 0;
+  color: var(--main-color);
+  font-size: 1rem;
+}
+
+.insight-card p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.insight-card ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.insight-card li {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+/* Analysis Summary */
+.analysis-summary {
+  margin: 2rem 0;
+}
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.summary-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.25rem;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border-left: 4px solid #e9ecef;
+  transition: transform 0.2s;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+}
+
+.summary-card.revenue {
+  border-left-color: #27ae60;
+}
+
+.summary-card.costs {
+  border-left-color: #e74c3c;
+}
+
+.summary-card.profit.positive {
+  border-left-color: #27ae60;
+}
+
+.summary-card.profit.negative {
+  border-left-color: #e74c3c;
+}
+
+.summary-card.roi {
+  border-left-color: #3498db;
+}
+
+.summary-card.payback {
+  border-left-color: #9b59b6;
+}
+
+.summary-card h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.95rem;
+  color: #666;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summary-card .amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--header-bg);
+  margin-bottom: 0.25rem;
+}
+
+.summary-card .period {
+  font-size: 0.8rem;
+  color: #999;
+}
+
+/* Business Type KPIs */
+.business-type-kpis {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.business-type-kpis h4 {
+  margin: 0 0 1rem 0;
+  color: var(--header-bg);
+  font-size: 1.1rem;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 0.75rem;
+}
+
+.kpi {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border-left: 3px solid var(--main-color);
+}
+
+.kpi-label {
+  font-weight: 500;
+  color: var(--header-bg);
+}
+
+.kpi-value {
+  font-weight: 600;
+  color: var(--main-color);
+}
+
+/* Analysis Actions */
+.analysis-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e9ecef;
+}
+
+.calculate-btn {
+  background: linear-gradient(135deg, var(--main-color), var(--accent-color));
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(26, 188, 156, 0.3);
+}
+
+.calculate-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(26, 188, 156, 0.4);
+}
+
+.save-scenario-btn {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.save-scenario-btn:hover {
+  background: #5a6268;
+  transform: translateY(-1px);
+}
+
+/* Responsive Design for Business Analytics */
+@media (max-width: 768px) {
+  .business-type-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .project-template-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .summary-cards {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+  
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .analysis-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .change-selection-btn {
+    position: static;
+    margin-top: 1rem;
+  }
+  
+  .insights-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -747,30 +747,13 @@ window.onload = function () {
     });
   });
 
-  // Initialize project type selector
+  // Initialize business analytics interface
   if (window.dynamicUI) {
-    window.dynamicUI.generateProjectTypeSelector('project-selector');
-    
-    // Auto-load default project types for backward compatibility
-    setTimeout(() => {
-      // Check the checkboxes for default types
-      const padelCheckbox = document.querySelector('input[value="padel"]');
-      const gymCheckbox = document.querySelector('input[value="gym"]');
-      
-      if (padelCheckbox) {
-        padelCheckbox.checked = true;
-        padelCheckbox.dispatchEvent(new Event('change'));
-      }
-      
-      if (gymCheckbox) {
-        gymCheckbox.checked = true;
-        gymCheckbox.dispatchEvent(new Event('change'));
-      }
-    }, 200);
+    window.dynamicUI.generateBusinessTypeSelector('business-analytics');
   }
 
-  // Show project selector by default
-  showTab('project-selector');
+  // Show business analytics by default
+  showTab('business-analytics');
 
   // Legacy event listeners (kept for backward compatibility)
   document.getElementById('calculatePadelBtn')?.addEventListener('click', calculatePadel);

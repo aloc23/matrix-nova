@@ -23,7 +23,7 @@
     <h1>Generic P&L Investment Planner</h1>
   </header>
   <nav class="tabs" role="tablist">
-    <button type="button" data-tab="project-selector" class="active">Projects</button>
+    <button type="button" data-tab="business-analytics" class="active">Business Analytics</button>
     <button type="button" data-tab="pnl">Profit &amp; Loss</button>
     <button type="button" data-tab="roi">ROI</button>
     <button type="button" data-tab="scenarios">Scenarios</button>
@@ -32,8 +32,15 @@
     <button type="button" id="btnFiles" onclick="window.open('https://aloc23.github.io/pci_project_file_viewer/', '_blank')">Files</button>
   </nav>
   <main>
-    <!-- Project Type Selection Tab -->
-    <section id="project-selector" class="tab-content">
+    <!-- Business Analytics Tab (Main Interface) -->
+    <section id="business-analytics" class="tab-content">
+      <h2>Flexible Business Analytics Tool</h2>
+      <p>Analyze any project or business type with tailored input fields and KPIs. Select your business category to get started with relevant analytics for your industry.</p>
+      <!-- Dynamic business analytics interface will be generated here -->
+    </section>
+    
+    <!-- Legacy project selector kept for backward compatibility -->
+    <section id="project-selector" class="tab-content hidden legacy-section">
       <h2>Project Configuration</h2>
       <p>Select the types of projects you want to analyze. You can choose from predefined templates or create custom project types.</p>
       <!-- Dynamic project type selector will be generated here -->
