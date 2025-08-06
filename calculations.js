@@ -71,6 +71,10 @@ class PLCalculationEngine {
       annualRevenue = this.calculateRentalRevenue(revenueConfig, data);
     } else if (projectType.id === 'couponPlatform') {
       annualRevenue = this.calculatePromotionRevenue(revenueConfig, data);
+    } else if (projectType.id === 'realEstate') {
+      annualRevenue = this.calculateRealEstateRevenue(revenueConfig, data);
+    } else if (projectType.id === 'capexInvestment') {
+      annualRevenue = this.calculateCapExRevenue(revenueConfig, data);
     } else {
       // Generic revenue calculation - sum all revenue fields
       annualRevenue = this.calculateGenericRevenue(revenueConfig, data);
@@ -240,6 +244,45 @@ class PLCalculationEngine {
     return monthlyRevenue * 12;
   }
 
+  // Real Estate revenue calculation
+  calculateRealEstateRevenue(config, data) {
+    const monthlyRent = this.getValue(data, 'monthlyRent', 0);
+    const occupancyRate = this.getValue(data, 'occupancyRate', 100) / 100;
+    const rentIncrease = this.getValue(data, 'rentIncrease', 0) / 100;
+    const otherIncome = this.getValue(data, 'otherIncome', 0);
+    
+    // Calculate effective annual rent (accounting for occupancy and mid-year increase)
+    const baseAnnualRent = monthlyRent * 12 * occupancyRate;
+    // Apply half of the rent increase to account for mid-year implementation
+    const adjustedAnnualRent = baseAnnualRent * (1 + rentIncrease / 2);
+    
+    return adjustedAnnualRent + otherIncome;
+  }
+
+  // CapEx Investment revenue calculation (benefits)
+  calculateCapExRevenue(config, data) {
+    const costSavings = this.getValue(data, 'costSavings', 0);
+    const revenueIncrease = this.getValue(data, 'revenueIncrease', 0);
+    const implementationTime = this.getValue(data, 'implementationTime', 6);
+    const rampUpPeriod = this.getValue(data, 'rampUpPeriod', 3);
+    
+    // Calculate the phased implementation of benefits
+    const totalImplementationTime = implementationTime + rampUpPeriod;
+    let effectiveBenefits = 0;
+    
+    if (totalImplementationTime >= 12) {
+      // Benefits only start in the following year
+      effectiveBenefits = 0;
+    } else {
+      // Benefits start within the year, calculate pro-rata
+      const monthsWithBenefits = 12 - totalImplementationTime;
+      const rampUpFactor = rampUpPeriod > 0 ? 0.5 : 1; // 50% during ramp-up
+      effectiveBenefits = (costSavings + revenueIncrease) * (monthsWithBenefits / 12) * rampUpFactor;
+    }
+    
+    return effectiveBenefits;
+  }
+
   // Calculate total costs (operating + staffing)
   calculateCosts(projectType, data) {
     const operatingCosts = this.calculateOperatingCosts(projectType.categories.operating, data);
@@ -283,13 +326,13 @@ class PLCalculationEngine {
     const roles = new Map();
     
     for (const field of staffingConfig) {
-      const baseName = field.id.replace(/Sal$/, ''); // Remove 'Sal' suffix if present
+      const baseName = field.id.replace(/Sal$/, '').replace(/Rate$/, ''); // Remove 'Sal' or 'Rate' suffix if present
       
       if (!roles.has(baseName)) {
         roles.set(baseName, { count: 0, salary: 0 });
       }
       
-      if (field.id.endsWith('Sal') || field.id.includes('Salary')) {
+      if (field.id.endsWith('Sal') || field.id.includes('Salary') || field.id.endsWith('Rate')) {
         let salary = this.getValue(data, field.id, field.defaultValue || 0);
         
         // Handle per-event costs for speakers and support staff
@@ -297,14 +340,40 @@ class PLCalculationEngine {
           salary *= this.getValue(data, 'eventsPerYear', 1);
         }
         
+        // Handle real estate management fee as percentage of rent
+        if (field.id === 'managementFee' && data.propertyManager) {
+          const monthlyRent = this.getValue(data, 'monthlyRent', 0);
+          const occupancyRate = this.getValue(data, 'occupancyRate', 100) / 100;
+          const managementFeePercent = this.getValue(data, 'managementFee', 0) / 100;
+          
+          if (this.getValue(data, 'propertyManager', false)) {
+            salary = monthlyRent * 12 * occupancyRate * managementFeePercent;
+          } else {
+            salary = 0;
+          }
+        }
+        
+        // Handle handyman costs (hours * rate * 12 months)
+        if (field.id === 'handymanRate') {
+          const hours = this.getValue(data, 'handymanHours', 0);
+          salary = salary * hours * 12;
+        }
+        
         roles.get(baseName).salary = salary;
       } else if (field.type === 'number') {
         roles.get(baseName).count = this.getValue(data, field.id, field.defaultValue || 0);
+      } else if (field.type === 'boolean') {
+        // For boolean fields like propertyManager, we set count to 1 if true
+        roles.get(baseName).count = this.getValue(data, field.id, false) ? 1 : 0;
       }
     }
     
     // Calculate total staffing costs
     for (const [roleName, role] of roles) {
+      // Skip certain calculated fields to avoid double counting
+      if (roleName === 'managementFee' || roleName === 'handymanRate') {
+        continue;
+      }
       totalCosts += role.count * role.salary;
     }
     
@@ -400,6 +469,36 @@ class PLCalculationEngine {
           fee: this.getValue(data, 'annualFee', 0),
           revenue: this.getValue(data, 'annualMembers', 0) * this.getValue(data, 'annualFee', 0)
         }
+      };
+    } else if (projectType.id === 'realEstate') {
+      const monthlyRent = this.getValue(data, 'monthlyRent', 0);
+      const occupancyRate = this.getValue(data, 'occupancyRate', 100) / 100;
+      const rentIncrease = this.getValue(data, 'rentIncrease', 0) / 100;
+      
+      breakdown.rental = {
+        monthlyRent: monthlyRent,
+        occupancyRate: this.getValue(data, 'occupancyRate', 0),
+        annualRentIncrease: this.getValue(data, 'rentIncrease', 0),
+        effectiveAnnualRent: monthlyRent * 12 * occupancyRate,
+        adjustedForIncrease: monthlyRent * 12 * occupancyRate * (1 + rentIncrease / 2),
+        otherIncome: this.getValue(data, 'otherIncome', 0),
+        totalRevenue: (monthlyRent * 12 * occupancyRate * (1 + rentIncrease / 2)) + this.getValue(data, 'otherIncome', 0)
+      };
+    } else if (projectType.id === 'capexInvestment') {
+      const costSavings = this.getValue(data, 'costSavings', 0);
+      const revenueIncrease = this.getValue(data, 'revenueIncrease', 0);
+      const implementationTime = this.getValue(data, 'implementationTime', 6);
+      const rampUpPeriod = this.getValue(data, 'rampUpPeriod', 3);
+      
+      breakdown.benefits = {
+        annualCostSavings: costSavings,
+        annualRevenueIncrease: revenueIncrease,
+        implementationMonths: implementationTime,
+        rampUpMonths: rampUpPeriod,
+        totalBenefits: costSavings + revenueIncrease,
+        firstYearBenefits: this.calculateCapExRevenue(null, data),
+        efficiencyGains: this.getValue(data, 'efficiencyGains', 0),
+        qualityImprovement: this.getValue(data, 'qualityImprovement', 0)
       };
     }
     

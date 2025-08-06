@@ -441,7 +441,8 @@ class DynamicUIGenerator {
       'hourly-project': 'Revenue from hourly billing or project-based fees',
       'tuition-fees': 'Revenue from educational fees and course enrollments',
       'rental-income': 'Revenue from renting out assets or properties',
-      'mixed': 'Multiple revenue streams combined'
+      'mixed': 'Multiple revenue streams combined',
+      'cost-savings': 'Benefits realized through cost reductions and efficiency gains'
     };
     return descriptions[model] || 'Custom revenue model';
   }
@@ -484,7 +485,15 @@ class DynamicUIGenerator {
       'multiple_revenue_streams': 'Multiple revenue stream management',
       'cross_selling': 'Cross-selling opportunities',
       'segment_analysis': 'Customer segment analysis',
-      'model_optimization': 'Business model optimization'
+      'model_optimization': 'Business model optimization',
+      'property_management': 'Property management and maintenance',
+      'rental_income': 'Rental income optimization',
+      'property_appreciation': 'Property value appreciation tracking',
+      'tenant_management': 'Tenant relationship management',
+      'budget_tracking': 'Budget utilization tracking',
+      'project_management': 'Project timeline and milestone management',
+      'cost_savings': 'Cost savings identification and tracking',
+      'implementation_phases': 'Phased implementation planning'
     };
     return formats[char] || char.replace(/_/g, ' ');
   }
@@ -815,6 +824,34 @@ class DynamicUIGenerator {
             <li>Annual: ${memberships.annual.members} members × €${memberships.annual.fee}/year = €${memberships.annual.revenue.toLocaleString()}/year</li>
           </ul>
         `;
+      } else if (result.typeId === 'realEstate' && result.breakdown.rental) {
+        const rental = result.breakdown.rental;
+        breakdownHtml += `
+          <h4>Real Estate Analysis</h4>
+          <ul>
+            <li>Monthly Rent: €${rental.monthlyRent.toLocaleString()}</li>
+            <li>Occupancy Rate: ${rental.occupancyRate}%</li>
+            <li>Effective Annual Rent: €${rental.effectiveAnnualRent.toLocaleString()}</li>
+            <li>With Growth Adjustment: €${rental.adjustedForIncrease.toLocaleString()}</li>
+            <li>Other Income: €${rental.otherIncome.toLocaleString()}</li>
+            <li><strong>Total Revenue: €${rental.totalRevenue.toLocaleString()}</strong></li>
+          </ul>
+        `;
+      } else if (result.typeId === 'capexInvestment' && result.breakdown.benefits) {
+        const benefits = result.breakdown.benefits;
+        breakdownHtml += `
+          <h4>CapEx Investment Analysis</h4>
+          <ul>
+            <li>Annual Cost Savings: €${benefits.annualCostSavings.toLocaleString()}</li>
+            <li>Annual Revenue Increase: €${benefits.annualRevenueIncrease.toLocaleString()}</li>
+            <li>Total Annual Benefits: €${benefits.totalBenefits.toLocaleString()}</li>
+            <li>Implementation Period: ${benefits.implementationMonths} months</li>
+            <li>Ramp-up Period: ${benefits.rampUpMonths} months</li>
+            <li><strong>First Year Benefits: €${benefits.firstYearBenefits.toLocaleString()}</strong></li>
+            <li>Efficiency Gains: ${benefits.efficiencyGains}%</li>
+            <li>Quality Improvement: ${benefits.qualityImprovement}%</li>
+          </ul>
+        `;
       }
     }
     
@@ -917,104 +954,145 @@ class DynamicUIGenerator {
   generateBusinessTypeKPIs(result, businessCategory) {
     const kpis = [];
     
-    switch (businessCategory.id) {
-      case 'booking':
-        if (result.breakdown.revenue && result.breakdown.revenue.peak) {
-          kpis.push(`<div class="kpi">
-            <span class="kpi-label">Peak Utilization Rate:</span>
-            <span class="kpi-value">${result.breakdown.revenue.peak.utilization.toFixed(1)}%</span>
-          </div>`);
-          kpis.push(`<div class="kpi">
-            <span class="kpi-label">Total Bookable Hours/Year:</span>
-            <span class="kpi-value">${(result.breakdown.revenue.peak.totalHours + result.breakdown.revenue.offPeak.totalHours).toLocaleString()}</span>
-          </div>`);
-          kpis.push(`<div class="kpi">
-            <span class="kpi-label">Revenue per Hour:</span>
-            <span class="kpi-value">€${((result.revenue.annual) / (result.breakdown.revenue.peak.utilizedHours + result.breakdown.revenue.offPeak.utilizedHours)).toFixed(2)}</span>
-          </div>`);
-        }
-        break;
+    // Check both business category ID and specific project type ID for broader compatibility
+    const categoryId = businessCategory.id;
+    const projectTypeId = result.typeId;
+    
+    if (categoryId === 'booking' || projectTypeId === 'padel') {
+      if (result.breakdown.revenue && result.breakdown.revenue.peak) {
+        kpis.push(`<div class="kpi">
+          <span class="kpi-label">Peak Utilization Rate:</span>
+          <span class="kpi-value">${result.breakdown.revenue.peak.utilization.toFixed(1)}%</span>
+        </div>`);
+        kpis.push(`<div class="kpi">
+          <span class="kpi-label">Total Bookable Hours/Year:</span>
+          <span class="kpi-value">${(result.breakdown.revenue.peak.totalHours + result.breakdown.revenue.offPeak.totalHours).toLocaleString()}</span>
+        </div>`);
+        kpis.push(`<div class="kpi">
+          <span class="kpi-label">Revenue per Hour:</span>
+          <span class="kpi-value">€${((result.revenue.annual) / (result.breakdown.revenue.peak.utilizedHours + result.breakdown.revenue.offPeak.utilizedHours)).toFixed(2)}</span>
+        </div>`);
+      }
+    } else if (categoryId === 'member' || projectTypeId === 'gym') {
+      if (result.breakdown.revenue && result.breakdown.revenue.memberships) {
+        const memberships = result.breakdown.revenue.memberships;
+        const totalMembers = memberships.weekly.members + memberships.monthly.members + memberships.annual.members;
+        kpis.push(`<div class="kpi">
+          <span class="kpi-label">Total Members:</span>
+          <span class="kpi-value">${totalMembers}</span>
+        </div>`);
+        kpis.push(`<div class="kpi">
+          <span class="kpi-label">Average Revenue per Member:</span>
+          <span class="kpi-value">€${(result.revenue.annual / totalMembers).toFixed(2)}/year</span>
+        </div>`);
+        kpis.push(`<div class="kpi">
+          <span class="kpi-label">Monthly Recurring Revenue:</span>
+          <span class="kpi-value">€${(result.revenue.annual / 12).toLocaleString()}</span>
+        </div>`);
+      }
+    } else if (categoryId === 'event') {
+      if (result.formData) {
+        const eventsPerYear = result.formData.eventsPerYear || 0;
+        const capacity = result.formData.capacity || 0;
+        const occupancyRate = result.formData.occupancyRate || 0;
         
-      case 'member':
-        if (result.breakdown.revenue && result.breakdown.revenue.memberships) {
-          const memberships = result.breakdown.revenue.memberships;
-          const totalMembers = memberships.weekly.members + memberships.monthly.members + memberships.annual.members;
-          kpis.push(`<div class="kpi">
-            <span class="kpi-label">Total Members:</span>
-            <span class="kpi-value">${totalMembers}</span>
-          </div>`);
-          kpis.push(`<div class="kpi">
-            <span class="kpi-label">Average Revenue per Member:</span>
-            <span class="kpi-value">€${(result.revenue.annual / totalMembers).toFixed(2)}/year</span>
-          </div>`);
-          kpis.push(`<div class="kpi">
-            <span class="kpi-label">Monthly Recurring Revenue:</span>
-            <span class="kpi-value">€${(result.revenue.annual / 12).toLocaleString()}</span>
-          </div>`);
-        }
-        break;
+        kpis.push(`<div class="kpi">
+          <span class="kpi-label">Total Event Capacity/Year:</span>
+          <span class="kpi-value">${(eventsPerYear * capacity).toLocaleString()}</span>
+        </div>`);
+        kpis.push(`<div class="kpi">
+          <span class="kpi-label">Expected Attendance/Year:</span>
+          <span class="kpi-value">${(eventsPerYear * capacity * occupancyRate / 100).toLocaleString()}</span>
+        </div>`);
+        kpis.push(`<div class="kpi">
+          <span class="kpi-label">Revenue per Attendee:</span>
+          <span class="kpi-value">€${(result.revenue.annual / (eventsPerYear * capacity * occupancyRate / 100)).toFixed(2)}</span>
+        </div>`);
+      }
+    } else if (categoryId === 'product') {
+      if (result.formData) {
+        const ordersPerMonth = result.formData.ordersPerMonth || 0;
+        const avgOrderValue = result.formData.avgOrderValue || 0;
         
-      case 'event':
-        if (result.formData) {
-          const eventsPerYear = result.formData.eventsPerYear || 0;
-          const capacity = result.formData.capacity || 0;
-          const occupancyRate = result.formData.occupancyRate || 0;
-          
-          kpis.push(`<div class="kpi">
-            <span class="kpi-label">Total Event Capacity/Year:</span>
-            <span class="kpi-value">${(eventsPerYear * capacity).toLocaleString()}</span>
-          </div>`);
-          kpis.push(`<div class="kpi">
-            <span class="kpi-label">Expected Attendance/Year:</span>
-            <span class="kpi-value">${(eventsPerYear * capacity * occupancyRate / 100).toLocaleString()}</span>
-          </div>`);
-          kpis.push(`<div class="kpi">
-            <span class="kpi-label">Revenue per Attendee:</span>
-            <span class="kpi-value">€${(result.revenue.annual / (eventsPerYear * capacity * occupancyRate / 100)).toFixed(2)}</span>
-          </div>`);
-        }
-        break;
+        kpis.push(`<div class="kpi">
+          <span class="kpi-label">Orders per Year:</span>
+          <span class="kpi-value">${(ordersPerMonth * 12).toLocaleString()}</span>
+        </div>`);
+        kpis.push(`<div class="kpi">
+          <span class="kpi-label">Average Order Value:</span>
+          <span class="kpi-value">€${avgOrderValue}</span>
+        </div>`);
+        kpis.push(`<div class="kpi">
+          <span class="kpi-label">Gross Margin:</span>
+          <span class="kpi-value">${result.formData.grossMargin || 0}%</span>
+        </div>`);
+      }
+    } else if (categoryId === 'service') {
+      if (result.formData) {
+        const billableHours = result.formData.billableHours || 0;
+        const hourlyRate = result.formData.hourlyRate || 0;
+        const weeksPerYear = result.formData.weeksPerYear || 0;
         
-      case 'product':
-        if (result.formData) {
-          const ordersPerMonth = result.formData.ordersPerMonth || 0;
-          const avgOrderValue = result.formData.avgOrderValue || 0;
-          
-          kpis.push(`<div class="kpi">
-            <span class="kpi-label">Orders per Year:</span>
-            <span class="kpi-value">${(ordersPerMonth * 12).toLocaleString()}</span>
-          </div>`);
-          kpis.push(`<div class="kpi">
-            <span class="kpi-label">Average Order Value:</span>
-            <span class="kpi-value">€${avgOrderValue}</span>
-          </div>`);
-          kpis.push(`<div class="kpi">
-            <span class="kpi-label">Gross Margin:</span>
-            <span class="kpi-value">${result.formData.grossMargin || 0}%</span>
-          </div>`);
-        }
-        break;
+        kpis.push(`<div class="kpi">
+          <span class="kpi-label">Billable Hours/Year:</span>
+          <span class="kpi-value">${(billableHours * weeksPerYear).toLocaleString()}</span>
+        </div>`);
+        kpis.push(`<div class="kpi">
+          <span class="kpi-label">Hourly Rate:</span>
+          <span class="kpi-value">€${hourlyRate}/hour</span>
+        </div>`);
+        kpis.push(`<div class="kpi">
+          <span class="kpi-label">Utilization Rate:</span>
+          <span class="kpi-value">${result.formData.utilizationRate || 0}%</span>
+        </div>`);
+      }
+    } else if (categoryId === 'real_estate' || projectTypeId === 'realEstate') {
+      if (result.breakdown.rental) {
+        const rental = result.breakdown.rental;
+        const totalInvestment = result.investment;
+        const grossRentYield = totalInvestment > 0 ? (rental.effectiveAnnualRent / totalInvestment * 100) : 0;
+        const netRentYield = totalInvestment > 0 ? (result.profit / totalInvestment * 100) : 0;
         
-      case 'service':
-        if (result.formData) {
-          const billableHours = result.formData.billableHours || 0;
-          const hourlyRate = result.formData.hourlyRate || 0;
-          const weeksPerYear = result.formData.weeksPerYear || 0;
-          
-          kpis.push(`<div class="kpi">
-            <span class="kpi-label">Billable Hours/Year:</span>
-            <span class="kpi-value">${(billableHours * weeksPerYear).toLocaleString()}</span>
-          </div>`);
-          kpis.push(`<div class="kpi">
-            <span class="kpi-label">Hourly Rate:</span>
-            <span class="kpi-value">€${hourlyRate}/hour</span>
-          </div>`);
-          kpis.push(`<div class="kpi">
-            <span class="kpi-label">Utilization Rate:</span>
-            <span class="kpi-value">${result.formData.utilizationRate || 0}%</span>
-          </div>`);
-        }
-        break;
+        kpis.push(`<div class="kpi">
+          <span class="kpi-label">Gross Rental Yield:</span>
+          <span class="kpi-value">${grossRentYield.toFixed(2)}%</span>
+        </div>`);
+        kpis.push(`<div class="kpi">
+          <span class="kpi-label">Net Rental Yield:</span>
+          <span class="kpi-value">${netRentYield.toFixed(2)}%</span>
+        </div>`);
+        kpis.push(`<div class="kpi">
+          <span class="kpi-label">Occupancy Rate:</span>
+          <span class="kpi-value">${rental.occupancyRate}%</span>
+        </div>`);
+        kpis.push(`<div class="kpi">
+          <span class="kpi-label">Monthly Cash Flow:</span>
+          <span class="kpi-value">€${(result.profit / 12).toFixed(2)}</span>
+        </div>`);
+      }
+    } else if (categoryId === 'capex_investment' || projectTypeId === 'capexInvestment') {
+      if (result.breakdown.benefits) {
+        const benefits = result.breakdown.benefits;
+        const budgetUtilization = result.investment > 0 ? 100 : 0; // Simplified - could be enhanced
+        const projectROI = result.investment > 0 ? (benefits.totalBenefits / result.investment * 100) : 0;
+        
+        kpis.push(`<div class="kpi">
+          <span class="kpi-label">Project ROI:</span>
+          <span class="kpi-value">${projectROI.toFixed(1)}%</span>
+        </div>`);
+        kpis.push(`<div class="kpi">
+          <span class="kpi-label">Annual Cost Savings:</span>
+          <span class="kpi-value">€${benefits.annualCostSavings.toLocaleString()}</span>
+        </div>`);
+        kpis.push(`<div class="kpi">
+          <span class="kpi-label">Implementation + Ramp-up:</span>
+          <span class="kpi-value">${benefits.implementationMonths + benefits.rampUpMonths} months</span>
+        </div>`);
+        kpis.push(`<div class="kpi">
+          <span class="kpi-label">Efficiency Improvement:</span>
+          <span class="kpi-value">${benefits.efficiencyGains}%</span>
+        </div>`);
+      }
     }
     
     return kpis.length > 0 ? `<div class="kpi-grid">${kpis.join('')}</div>` : '<p>No specific KPIs available for this business type.</p>';
