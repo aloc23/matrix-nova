@@ -75,6 +75,18 @@ class PLCalculationEngine {
       annualRevenue = this.calculateRealEstateRevenue(revenueConfig, data);
     } else if (projectType.id === 'capexInvestment') {
       annualRevenue = this.calculateCapExRevenue(revenueConfig, data);
+    } else if (projectType.id === 'subscriptionService') {
+      annualRevenue = this.calculateSubscriptionRevenue(revenueConfig, data);
+    } else if (projectType.id === 'licensingBusiness') {
+      annualRevenue = this.calculateLicensingRevenue(revenueConfig, data);
+    } else if (projectType.id === 'partnershipBusiness') {
+      annualRevenue = this.calculatePartnershipRevenue(revenueConfig, data);
+    } else if (projectType.id === 'investmentPortfolio') {
+      annualRevenue = this.calculateInvestmentRevenue(revenueConfig, data);
+    } else if (projectType.id === 'operationalOptimization') {
+      annualRevenue = this.calculateOperationalRevenue(revenueConfig, data);
+    } else if (projectType.id === 'recurringService') {
+      annualRevenue = this.calculateRecurringRevenue(revenueConfig, data);
     } else {
       // Generic revenue calculation - sum all revenue fields
       annualRevenue = this.calculateGenericRevenue(revenueConfig, data);
@@ -690,6 +702,84 @@ class PLCalculationEngine {
     }
     
     return cashFlow;
+  }
+
+  // New revenue calculation methods for added business types
+
+  // Subscription Service Revenue
+  calculateSubscriptionRevenue(config, data) {
+    const basicSubs = this.getValue(data, 'basicSubs', 0);
+    const basicPrice = this.getValue(data, 'basicPrice', 0);
+    const premiumSubs = this.getValue(data, 'premiumSubs', 0);
+    const premiumPrice = this.getValue(data, 'premiumPrice', 0);
+    const churnRate = this.getValue(data, 'churnRate', 0) / 100;
+    const growthRate = this.getValue(data, 'growthRate', 0) / 100;
+    
+    // Calculate with churn and growth effects
+    const effectiveBasicSubs = basicSubs * (1 - churnRate + growthRate);
+    const effectivePremiumSubs = premiumSubs * (1 - churnRate + growthRate);
+    
+    return (effectiveBasicSubs * basicPrice * 12) + (effectivePremiumSubs * premiumPrice * 12);
+  }
+
+  // Licensing & Royalties Revenue
+  calculateLicensingRevenue(config, data) {
+    const licensees = this.getValue(data, 'licensees', 0);
+    const royaltyRate = this.getValue(data, 'royaltyRate', 0) / 100;
+    const licenseeRevenue = this.getValue(data, 'licenseeRevenue', 0);
+    const upfrontFees = this.getValue(data, 'upfrontFees', 0);
+    
+    const royaltyRevenue = licensees * licenseeRevenue * royaltyRate;
+    const totalUpfrontFees = licensees * upfrontFees;
+    
+    return royaltyRevenue + totalUpfrontFees;
+  }
+
+  // Partnership Revenue
+  calculatePartnershipRevenue(config, data) {
+    const partners = this.getValue(data, 'partners', 0);
+    const avgPartnerRevenue = this.getValue(data, 'avgPartnerRevenue', 0);
+    const revenueShare = this.getValue(data, 'revenueShare', 0) / 100;
+    const partnerGrowth = this.getValue(data, 'partnerGrowth', 0) / 100;
+    
+    const effectivePartnerRevenue = avgPartnerRevenue * (1 + partnerGrowth);
+    return partners * effectivePartnerRevenue * revenueShare;
+  }
+
+  // Investment Returns Revenue
+  calculateInvestmentRevenue(config, data) {
+    const initialCapital = this.getValue(data, 'initialCapital', 0);
+    const expectedReturn = this.getValue(data, 'expectedReturn', 0) / 100;
+    const dividendYield = this.getValue(data, 'dividendYield', 0) / 100;
+    const capitalGains = this.getValue(data, 'capitalGains', 0) / 100;
+    
+    const dividendIncome = initialCapital * dividendYield;
+    const capitalGainsIncome = initialCapital * capitalGains;
+    
+    return dividendIncome + capitalGainsIncome;
+  }
+
+  // Operational Efficiency Revenue (Cost Savings)
+  calculateOperationalRevenue(config, data) {
+    const costSavings = this.getValue(data, 'costSavings', 0);
+    const efficiencyGain = this.getValue(data, 'efficiencyGain', 0) / 100;
+    const timeReduction = this.getValue(data, 'timeReduction', 0) / 100;
+    const qualityImprovement = this.getValue(data, 'qualityImprovement', 0) / 100;
+    
+    // Calculate benefit as cost savings plus additional efficiency gains
+    const additionalBenefits = costSavings * (efficiencyGain + timeReduction + qualityImprovement) * 0.5;
+    return costSavings + additionalBenefits;
+  }
+
+  // Recurring Service Revenue
+  calculateRecurringRevenue(config, data) {
+    const contracts = this.getValue(data, 'contracts', 0);
+    const avgContractValue = this.getValue(data, 'avgContractValue', 0);
+    const renewalRate = this.getValue(data, 'renewalRate', 0) / 100;
+    const growthRate = this.getValue(data, 'growthRate', 0) / 100;
+    
+    const effectiveContracts = contracts * renewalRate * (1 + growthRate);
+    return effectiveContracts * avgContractValue * 12;
   }
 }
 

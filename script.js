@@ -809,3 +809,76 @@ document.querySelectorAll('.collapsible-toggle').forEach(btn => {
     }
   });
 });
+
+// Reset functionality for tabs
+window.resetPnLTab = function() {
+  if (confirm('This will reset all P&L data and filters. Are you sure?')) {
+    // Reset any filters or adjustments
+    document.getElementById('roiRevAdjust').value = 100;
+    document.getElementById('roiCostAdjust').value = 100;
+    document.getElementById('roiRevAdjustLabel').textContent = '100%';
+    document.getElementById('roiCostAdjustLabel').textContent = '100%';
+    
+    // Clear P&L summary
+    const pnlSummary = document.getElementById('pnlSummary');
+    if (pnlSummary) {
+      pnlSummary.innerHTML = '<p><em>Select a business type and project to view P&L analysis</em></p>';
+    }
+    
+    // Clear monthly breakdown
+    const monthlyBreakdown = document.querySelector('#monthlyBreakdown tbody');
+    if (monthlyBreakdown) {
+      monthlyBreakdown.innerHTML = '';
+    }
+    
+    // Clear cash flow
+    const cashFlowTable = document.querySelector('#cashFlowTable tbody');
+    if (cashFlowTable) {
+      cashFlowTable.innerHTML = '';
+    }
+    
+    // Reset dynamic UI if needed
+    if (window.dynamicUI) {
+      window.dynamicUI.resetSelection();
+    }
+    
+    alert('P&L tab has been reset successfully');
+  }
+};
+
+window.resetROITab = function() {
+  if (confirm('This will reset all ROI adjustments and filters. Are you sure?')) {
+    // Reset adjustment sliders
+    document.getElementById('roiRevAdjust').value = 100;
+    document.getElementById('roiCostAdjust').value = 100;
+    document.getElementById('roiRevAdjustLabel').textContent = '100%';
+    document.getElementById('roiCostAdjustLabel').textContent = '100%';
+    
+    // Clear ROI displays
+    const yearsToROI = document.getElementById('yearsToROIText');
+    if (yearsToROI) {
+      yearsToROI.innerHTML = '<div class="roi-summary">Select a business type and project to view ROI analysis</div>';
+    }
+    
+    const roiKPIs = document.getElementById('roiKPIs');
+    if (roiKPIs) {
+      roiKPIs.innerHTML = '';
+    }
+    
+    // Clear payback table
+    const paybackTable = document.querySelector('#paybackTable tbody');
+    if (paybackTable) {
+      paybackTable.innerHTML = '';
+    }
+    
+    // Reset dynamic UI if needed
+    if (window.dynamicUI) {
+      window.dynamicUI.resetSelection();
+    }
+    
+    // Recalculate with default values
+    updateROI();
+    
+    alert('ROI tab has been reset successfully');
+  }
+};
