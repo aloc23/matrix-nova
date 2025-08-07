@@ -168,7 +168,12 @@
     </section>
     <!-- PNL TAB -->
 <section id="pnl" class="tab-content hidden">
-  <h2>Profit &amp; Loss Statement</h2>
+  <div class="tab-header">
+    <h2>Profit &amp; Loss Statement</h2>
+    <button type="button" class="reset-btn" onclick="resetPnLTab()" title="Reset all data and filters">
+      🔄 Reset
+    </button>
+  </div>
   <div class="section-group">
     <p><em>Combined analysis of all selected project types</em></p>
   </div>
@@ -224,7 +229,12 @@
 </section>
     <!-- ROI TAB -->
     <section id="roi" class="tab-content hidden">
-      <h2>ROI &amp; Payback</h2>
+      <div class="tab-header">
+        <h2>ROI &amp; Payback</h2>
+        <button type="button" class="reset-btn" onclick="resetROITab()" title="Reset all adjustments and filters">
+          🔄 Reset
+        </button>
+      </div>
       <div class="section-group">
         <p><em>ROI analysis for all selected project types</em></p>
         <label>Revenue Adjust (%): <input id="roiRevAdjust" type="range" min="0" max="150" value="100" step="1" oninput="roiRevAdjustLabel.textContent=this.value+'%';updateROI()"><span id="roiRevAdjustLabel">100%</span></label>

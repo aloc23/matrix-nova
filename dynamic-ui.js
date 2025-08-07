@@ -442,7 +442,11 @@ class DynamicUIGenerator {
       'tuition-fees': 'Revenue from educational fees and course enrollments',
       'rental-income': 'Revenue from renting out assets or properties',
       'mixed': 'Multiple revenue streams combined',
-      'cost-savings': 'Benefits realized through cost reductions and efficiency gains'
+      'cost-savings': 'Benefits realized through cost reductions and efficiency gains',
+      'royalty-income': 'Revenue from intellectual property licensing and royalties',
+      'partnership-share': 'Revenue shared through strategic partnerships and collaborations',
+      'investment-income': 'Returns from investment portfolios and financial instruments',
+      'recurring-income': 'Predictable recurring revenue from contracts and services'
     };
     return descriptions[model] || 'Custom revenue model';
   }

@@ -65,16 +65,6 @@ const BUSINESS_TYPE_CATEGORIES = {
     revenueModel: 'event-tickets',
     characteristics: ['ticket_pricing', 'event_capacity', 'seasonal_events', 'speaker_costs']
   },
-  'promotion': {
-    id: 'promotion',
-    name: 'Promotion-based',
-    description: 'Businesses focused on coupon, discount, or promotion campaigns',
-    examples: ['Coupon platforms', 'Deal aggregators', 'Promotional campaigns'],
-    icon: '🎟️',
-    keyMetrics: ['Redemption Rate', 'Conversion Rate', 'Campaign ROI', 'Customer Acquisition Cost'],
-    revenueModel: 'commission',
-    characteristics: ['redemption_tracking', 'campaign_cycles', 'partner_commissions', 'conversion_funnels']
-  },
   'product': {
     id: 'product',
     name: 'Product-based',
@@ -144,6 +134,66 @@ const BUSINESS_TYPE_CATEGORIES = {
     keyMetrics: ['Budget Utilization', 'Project ROI', 'Implementation Timeline', 'Cost Variance'],
     revenueModel: 'cost-savings',
     characteristics: ['budget_tracking', 'project_management', 'asset_depreciation', 'cost_savings', 'implementation_phases']
+  },
+  'subscription_income': {
+    id: 'subscription_income',
+    name: 'Subscription Income',
+    description: 'Subscription-based revenue models with recurring payments',
+    examples: ['Software subscriptions', 'Content platforms', 'Service subscriptions', 'Membership programs'],
+    icon: '💳',
+    keyMetrics: ['Monthly Recurring Revenue', 'Churn Rate', 'Customer Lifetime Value', 'Upgrade Rate'],
+    revenueModel: 'subscription',
+    characteristics: ['recurring_revenue', 'subscription_tiers', 'retention_management', 'upgrade_optimization']
+  },
+  'licensing_royalties': {
+    id: 'licensing_royalties',
+    name: 'Licensing & Royalties',
+    description: 'Intellectual property licensing and royalty-based revenue',
+    examples: ['Patent licensing', 'Brand licensing', 'Content royalties', 'Franchise fees'],
+    icon: '📄',
+    keyMetrics: ['License Revenue', 'Royalty Rate', 'IP Portfolio Value', 'License Utilization'],
+    revenueModel: 'royalty-income',
+    characteristics: ['ip_management', 'royalty_tracking', 'license_compliance', 'portfolio_optimization']
+  },
+  'partnership_revenue': {
+    id: 'partnership_revenue',
+    name: 'Partnership Revenue',
+    description: 'Revenue generated through strategic partnerships and collaborations',
+    examples: ['Joint ventures', 'Strategic alliances', 'Revenue sharing', 'Channel partnerships'],
+    icon: '🤝',
+    keyMetrics: ['Partner Performance', 'Revenue Share', 'Partnership ROI', 'Channel Effectiveness'],
+    revenueModel: 'partnership-share',
+    characteristics: ['partner_management', 'revenue_sharing', 'channel_optimization', 'collaboration_tracking']
+  },
+  'investment_returns': {
+    id: 'investment_returns',
+    name: 'Investment Returns',
+    description: 'Investment portfolio management and returns tracking',
+    examples: ['Portfolio investments', 'Asset management', 'Fund management', 'Financial instruments'],
+    icon: '📈',
+    keyMetrics: ['Return on Investment', 'Portfolio Yield', 'Risk-Adjusted Returns', 'Asset Allocation'],
+    revenueModel: 'investment-income',
+    characteristics: ['portfolio_management', 'risk_assessment', 'return_optimization', 'asset_allocation']
+  },
+  'operational_efficiency': {
+    id: 'operational_efficiency',
+    name: 'Operational Efficiency',
+    description: 'Cost management and operational efficiency improvements',
+    examples: ['Process optimization', 'Cost reduction', 'Efficiency programs', 'Operational improvements'],
+    icon: '⚙️',
+    keyMetrics: ['Cost Savings', 'Efficiency Gains', 'Process Improvement', 'Resource Utilization'],
+    revenueModel: 'cost-savings',
+    characteristics: ['process_optimization', 'cost_management', 'efficiency_tracking', 'resource_optimization']
+  },
+  'recurring_revenue': {
+    id: 'recurring_revenue',
+    name: 'Recurring Revenue',
+    description: 'Predictable recurring revenue streams and maintenance contracts',
+    examples: ['Maintenance contracts', 'Support services', 'Retainer fees', 'Recurring services'],
+    icon: '🔄',
+    keyMetrics: ['Monthly Recurring Revenue', 'Contract Renewal Rate', 'Revenue Predictability', 'Service Utilization'],
+    revenueModel: 'recurring-income',
+    characteristics: ['contract_management', 'renewal_tracking', 'service_delivery', 'revenue_predictability']
   }
 };
 
@@ -448,40 +498,6 @@ const DEFAULT_PROJECT_TYPES = {
     }
   },
 
-  couponPlatform: {
-    id: 'couponPlatform',
-    name: 'Coupon Platform',
-    description: 'Digital coupon and deal platform with commission-based revenue',
-    icon: '🎟️',
-    businessType: 'promotion',
-    categories: {
-      investment: [
-        { id: 'platform', name: 'Platform Development', type: 'currency', defaultValue: 75000, unit: '€', group: 'Technology' },
-        { id: 'infrastructure', name: 'IT Infrastructure', type: 'currency', defaultValue: 15000, unit: '€', group: 'Technology' },
-        { id: 'marketing', name: 'Launch Marketing', type: 'currency', defaultValue: 25000, unit: '€', group: 'Marketing' }
-      ],
-      revenue: [
-        { id: 'merchants', name: 'Active Merchants', type: 'number', defaultValue: 100, unit: 'merchants', group: 'Partners' },
-        { id: 'avgDealValue', name: 'Average Deal Value', type: 'currency', defaultValue: 50, unit: '€', group: 'Deals' },
-        { id: 'dealsPerMonth', name: 'Deals per Merchant/Month', type: 'number', defaultValue: 20, unit: 'deals', group: 'Volume' },
-        { id: 'commission', name: 'Commission Rate', type: 'percentage', defaultValue: 15, unit: '%', group: 'Revenue' },
-        { id: 'redemptionRate', name: 'Redemption Rate', type: 'percentage', defaultValue: 60, unit: '%', group: 'Performance' }
-      ],
-      operating: [
-        { id: 'hosting', name: 'Platform Hosting/year', type: 'currency', defaultValue: 8000, unit: '€', group: 'Technology' },
-        { id: 'payment', name: 'Payment Processing/year', type: 'currency', defaultValue: 12000, unit: '€', group: 'Financial' },
-        { id: 'marketing', name: 'Digital Marketing/year', type: 'currency', defaultValue: 30000, unit: '€', group: 'Marketing' },
-        { id: 'support', name: 'Customer Support/year', type: 'currency', defaultValue: 15000, unit: '€', group: 'Operations' }
-      ],
-      staffing: [
-        { id: 'bdManager', name: 'Business Development', type: 'number', defaultValue: 2, unit: 'people', group: 'Sales' },
-        { id: 'bdSalary', name: 'BD Manager Salary', type: 'currency', defaultValue: 45000, unit: '€/year', group: 'Sales' },
-        { id: 'techStaff', name: 'Technical Staff', type: 'number', defaultValue: 1, unit: 'people', group: 'Technology' },
-        { id: 'techSalary', name: 'Tech Staff Salary', type: 'currency', defaultValue: 55000, unit: '€/year', group: 'Technology' }
-      ]
-    }
-  },
-
   // Real Estate Investment template
   realEstate: {
     id: 'realEstate',
@@ -559,6 +575,211 @@ const DEFAULT_PROJECT_TYPES = {
         { id: 'technicalStaff', name: 'Technical Staff Hours', type: 'number', defaultValue: 150, unit: 'hours', group: 'Project Team' },
         { id: 'techRate', name: 'Technical Hourly Rate', type: 'currency', defaultValue: 60, unit: '€/hour', group: 'Project Team' },
         { id: 'ongoingStaff', name: 'Ongoing Staff Cost', type: 'currency', defaultValue: 12000, unit: '€/year', group: 'Ongoing Operations' }
+      ]
+    }
+  },
+
+  // Subscription Income template
+  subscriptionService: {
+    id: 'subscriptionService',
+    name: 'Subscription Service',
+    description: 'Subscription-based business with recurring monthly/annual revenue',
+    icon: '💳',
+    businessType: 'subscription_income',
+    categories: {
+      investment: [
+        { id: 'platform', name: 'Platform Development', type: 'currency', defaultValue: 40000, unit: '€', group: 'Technology' },
+        { id: 'infrastructure', name: 'Infrastructure Setup', type: 'currency', defaultValue: 12000, unit: '€', group: 'Technology' },
+        { id: 'marketing', name: 'Launch Marketing', type: 'currency', defaultValue: 15000, unit: '€', group: 'Marketing' }
+      ],
+      revenue: [
+        { id: 'basicSubs', name: 'Basic Subscribers', type: 'number', defaultValue: 500, unit: 'subscribers', group: 'Subscriptions' },
+        { id: 'basicPrice', name: 'Basic Monthly Price', type: 'currency', defaultValue: 19, unit: '€/month', group: 'Subscriptions' },
+        { id: 'premiumSubs', name: 'Premium Subscribers', type: 'number', defaultValue: 200, unit: 'subscribers', group: 'Subscriptions' },
+        { id: 'premiumPrice', name: 'Premium Monthly Price', type: 'currency', defaultValue: 49, unit: '€/month', group: 'Subscriptions' },
+        { id: 'churnRate', name: 'Monthly Churn Rate', type: 'percentage', defaultValue: 5, unit: '%', group: 'Retention' },
+        { id: 'growthRate', name: 'Monthly Growth Rate', type: 'percentage', defaultValue: 8, unit: '%', group: 'Growth' }
+      ],
+      operating: [
+        { id: 'hosting', name: 'Cloud Hosting/month', type: 'currency', defaultValue: 1500, unit: '€', group: 'Technology' },
+        { id: 'support', name: 'Customer Support/year', type: 'currency', defaultValue: 18000, unit: '€', group: 'Operations' },
+        { id: 'marketing', name: 'Digital Marketing/year', type: 'currency', defaultValue: 25000, unit: '€', group: 'Growth' },
+        { id: 'payment', name: 'Payment Processing/year', type: 'currency', defaultValue: 5000, unit: '€', group: 'Financial' }
+      ],
+      staffing: [
+        { id: 'developer', name: 'Developers', type: 'number', defaultValue: 2, unit: 'people', group: 'Development' },
+        { id: 'developerSal', name: 'Developer Salary', type: 'currency', defaultValue: 55000, unit: '€/year', group: 'Development' },
+        { id: 'support', name: 'Support Staff', type: 'number', defaultValue: 1, unit: 'people', group: 'Operations' },
+        { id: 'supportSal', name: 'Support Salary', type: 'currency', defaultValue: 35000, unit: '€/year', group: 'Operations' }
+      ]
+    }
+  },
+
+  // Licensing & Royalties template
+  licensingBusiness: {
+    id: 'licensingBusiness',
+    name: 'Licensing & Royalties',
+    description: 'Intellectual property licensing with royalty-based revenue',
+    icon: '📄',
+    businessType: 'licensing_royalties',
+    categories: {
+      investment: [
+        { id: 'ipDevelopment', name: 'IP Development', type: 'currency', defaultValue: 50000, unit: '€', group: 'Intellectual Property' },
+        { id: 'legalCosts', name: 'Legal & Patent Costs', type: 'currency', defaultValue: 15000, unit: '€', group: 'Legal' },
+        { id: 'marketResearch', name: 'Market Research', type: 'currency', defaultValue: 8000, unit: '€', group: 'Research' }
+      ],
+      revenue: [
+        { id: 'licensees', name: 'Number of Licensees', type: 'number', defaultValue: 10, unit: 'licensees', group: 'Licensing' },
+        { id: 'royaltyRate', name: 'Average Royalty Rate', type: 'percentage', defaultValue: 5, unit: '%', group: 'Licensing' },
+        { id: 'licenseeRevenue', name: 'Avg Licensee Revenue', type: 'currency', defaultValue: 500000, unit: '€/year', group: 'Licensing' },
+        { id: 'upfrontFees', name: 'Upfront License Fees', type: 'currency', defaultValue: 25000, unit: '€/license', group: 'One-time' }
+      ],
+      operating: [
+        { id: 'ipMaintenance', name: 'IP Maintenance/year', type: 'currency', defaultValue: 5000, unit: '€', group: 'IP Management' },
+        { id: 'legal', name: 'Legal Services/year', type: 'currency', defaultValue: 8000, unit: '€', group: 'Legal' },
+        { id: 'monitoring', name: 'License Monitoring/year', type: 'currency', defaultValue: 3000, unit: '€', group: 'Compliance' },
+        { id: 'marketing', name: 'IP Marketing/year', type: 'currency', defaultValue: 6000, unit: '€', group: 'Business Development' }
+      ],
+      staffing: [
+        { id: 'ipManager', name: 'IP Manager', type: 'number', defaultValue: 1, unit: 'people', group: 'Management' },
+        { id: 'ipManagerSal', name: 'IP Manager Salary', type: 'currency', defaultValue: 65000, unit: '€/year', group: 'Management' },
+        { id: 'bdStaff', name: 'Business Development', type: 'number', defaultValue: 1, unit: 'people', group: 'Sales' },
+        { id: 'bdStaffSal', name: 'BD Staff Salary', type: 'currency', defaultValue: 45000, unit: '€/year', group: 'Sales' }
+      ]
+    }
+  },
+
+  // Partnership Revenue template
+  partnershipBusiness: {
+    id: 'partnershipBusiness',
+    name: 'Partnership Revenue',
+    description: 'Strategic partnerships and revenue sharing arrangements',
+    icon: '🤝',
+    businessType: 'partnership_revenue',
+    categories: {
+      investment: [
+        { id: 'partnershipSetup', name: 'Partnership Setup', type: 'currency', defaultValue: 20000, unit: '€', group: 'Setup' },
+        { id: 'technology', name: 'Integration Technology', type: 'currency', defaultValue: 15000, unit: '€', group: 'Technology' },
+        { id: 'marketing', name: 'Joint Marketing', type: 'currency', defaultValue: 10000, unit: '€', group: 'Marketing' }
+      ],
+      revenue: [
+        { id: 'partners', name: 'Active Partners', type: 'number', defaultValue: 5, unit: 'partners', group: 'Partnerships' },
+        { id: 'avgPartnerRevenue', name: 'Avg Partner Revenue', type: 'currency', defaultValue: 200000, unit: '€/year', group: 'Revenue' },
+        { id: 'revenueShare', name: 'Revenue Share %', type: 'percentage', defaultValue: 20, unit: '%', group: 'Revenue' },
+        { id: 'partnerGrowth', name: 'Partner Growth Rate', type: 'percentage', defaultValue: 15, unit: '%/year', group: 'Growth' }
+      ],
+      operating: [
+        { id: 'partnerManagement', name: 'Partner Management/year', type: 'currency', defaultValue: 8000, unit: '€', group: 'Management' },
+        { id: 'integration', name: 'Integration Costs/year', type: 'currency', defaultValue: 5000, unit: '€', group: 'Technology' },
+        { id: 'marketing', name: 'Joint Marketing/year', type: 'currency', defaultValue: 12000, unit: '€', group: 'Marketing' },
+        { id: 'legal', name: 'Legal & Compliance/year', type: 'currency', defaultValue: 4000, unit: '€', group: 'Legal' }
+      ],
+      staffing: [
+        { id: 'partnerManager', name: 'Partner Manager', type: 'number', defaultValue: 1, unit: 'people', group: 'Management' },
+        { id: 'partnerManagerSal', name: 'Partner Manager Salary', type: 'currency', defaultValue: 55000, unit: '€/year', group: 'Management' },
+        { id: 'techStaff', name: 'Technical Integration', type: 'number', defaultValue: 0.5, unit: 'people', group: 'Technology' },
+        { id: 'techStaffSal', name: 'Tech Staff Salary', type: 'currency', defaultValue: 60000, unit: '€/year', group: 'Technology' }
+      ]
+    }
+  },
+
+  // Investment Returns template
+  investmentPortfolio: {
+    id: 'investmentPortfolio',
+    name: 'Investment Portfolio',
+    description: 'Investment portfolio management and returns tracking',
+    icon: '📈',
+    businessType: 'investment_returns',
+    categories: {
+      investment: [
+        { id: 'initialCapital', name: 'Initial Investment Capital', type: 'currency', defaultValue: 500000, unit: '€', group: 'Capital' },
+        { id: 'tradingPlatform', name: 'Trading Platform Setup', type: 'currency', defaultValue: 5000, unit: '€', group: 'Technology' },
+        { id: 'research', name: 'Research & Analysis Tools', type: 'currency', defaultValue: 8000, unit: '€', group: 'Research' }
+      ],
+      revenue: [
+        { id: 'expectedReturn', name: 'Expected Annual Return', type: 'percentage', defaultValue: 8, unit: '%', group: 'Returns' },
+        { id: 'dividendYield', name: 'Dividend Yield', type: 'percentage', defaultValue: 3, unit: '%', group: 'Income' },
+        { id: 'capitalGains', name: 'Expected Capital Gains', type: 'percentage', defaultValue: 5, unit: '%', group: 'Growth' },
+        { id: 'riskLevel', name: 'Portfolio Risk Level', type: 'percentage', defaultValue: 15, unit: '% volatility', group: 'Risk' }
+      ],
+      operating: [
+        { id: 'managementFees', name: 'Management Fees/year', type: 'currency', defaultValue: 2500, unit: '€', group: 'Fees' },
+        { id: 'tradingCosts', name: 'Trading Costs/year', type: 'currency', defaultValue: 1500, unit: '€', group: 'Trading' },
+        { id: 'research', name: 'Research Subscriptions/year', type: 'currency', defaultValue: 3000, unit: '€', group: 'Research' },
+        { id: 'tax', name: 'Tax Advisory/year', type: 'currency', defaultValue: 2000, unit: '€', group: 'Advisory' }
+      ],
+      staffing: [
+        { id: 'portfolioManager', name: 'Portfolio Manager', type: 'number', defaultValue: 1, unit: 'people', group: 'Management' },
+        { id: 'portfolioManagerSal', name: 'Portfolio Manager Fee', type: 'currency', defaultValue: 30000, unit: '€/year', group: 'Management' },
+        { id: 'analyst', name: 'Financial Analyst', type: 'number', defaultValue: 0.5, unit: 'people', group: 'Analysis' },
+        { id: 'analystSal', name: 'Analyst Fee', type: 'currency', defaultValue: 40000, unit: '€/year', group: 'Analysis' }
+      ]
+    }
+  },
+
+  // Operational Efficiency template
+  operationalOptimization: {
+    id: 'operationalOptimization',
+    name: 'Operational Optimization',
+    description: 'Cost reduction and operational efficiency improvement project',
+    icon: '⚙️',
+    businessType: 'operational_efficiency',
+    categories: {
+      investment: [
+        { id: 'consultingFees', name: 'Consulting Fees', type: 'currency', defaultValue: 30000, unit: '€', group: 'Professional Services' },
+        { id: 'technology', name: 'Technology Upgrades', type: 'currency', defaultValue: 25000, unit: '€', group: 'Technology' },
+        { id: 'training', name: 'Staff Training', type: 'currency', defaultValue: 8000, unit: '€', group: 'Human Resources' }
+      ],
+      revenue: [
+        { id: 'costSavings', name: 'Annual Cost Savings', type: 'currency', defaultValue: 50000, unit: '€/year', group: 'Benefits' },
+        { id: 'efficiencyGain', name: 'Efficiency Improvement', type: 'percentage', defaultValue: 20, unit: '%', group: 'Performance' },
+        { id: 'timeReduction', name: 'Process Time Reduction', type: 'percentage', defaultValue: 30, unit: '%', group: 'Performance' },
+        { id: 'qualityImprovement', name: 'Quality Improvement', type: 'percentage', defaultValue: 15, unit: '%', group: 'Quality' }
+      ],
+      operating: [
+        { id: 'monitoring', name: 'Performance Monitoring/year', type: 'currency', defaultValue: 3000, unit: '€', group: 'Monitoring' },
+        { id: 'maintenance', name: 'System Maintenance/year', type: 'currency', defaultValue: 4000, unit: '€', group: 'Technology' },
+        { id: 'continuousImprovement', name: 'Continuous Improvement/year', type: 'currency', defaultValue: 2500, unit: '€', group: 'Process' }
+      ],
+      staffing: [
+        { id: 'processManager', name: 'Process Manager', type: 'number', defaultValue: 0.5, unit: 'people', group: 'Management' },
+        { id: 'processManagerSal', name: 'Process Manager Salary', type: 'currency', defaultValue: 50000, unit: '€/year', group: 'Management' },
+        { id: 'analyst', name: 'Business Analyst', type: 'number', defaultValue: 0.25, unit: 'people', group: 'Analysis' },
+        { id: 'analystSal', name: 'Analyst Salary', type: 'currency', defaultValue: 45000, unit: '€/year', group: 'Analysis' }
+      ]
+    }
+  },
+
+  // Recurring Revenue template
+  recurringService: {
+    id: 'recurringService',
+    name: 'Recurring Services',
+    description: 'Maintenance contracts and recurring service agreements',
+    icon: '🔄',
+    businessType: 'recurring_revenue',
+    categories: {
+      investment: [
+        { id: 'serviceSetup', name: 'Service Setup', type: 'currency', defaultValue: 15000, unit: '€', group: 'Setup' },
+        { id: 'equipment', name: 'Service Equipment', type: 'currency', defaultValue: 20000, unit: '€', group: 'Equipment' },
+        { id: 'training', name: 'Staff Training', type: 'currency', defaultValue: 5000, unit: '€', group: 'Training' }
+      ],
+      revenue: [
+        { id: 'contracts', name: 'Active Contracts', type: 'number', defaultValue: 50, unit: 'contracts', group: 'Contracts' },
+        { id: 'avgContractValue', name: 'Avg Monthly Contract Value', type: 'currency', defaultValue: 500, unit: '€/month', group: 'Contracts' },
+        { id: 'renewalRate', name: 'Contract Renewal Rate', type: 'percentage', defaultValue: 85, unit: '%', group: 'Retention' },
+        { id: 'growthRate', name: 'Contract Growth Rate', type: 'percentage', defaultValue: 10, unit: '%/year', group: 'Growth' }
+      ],
+      operating: [
+        { id: 'serviceDelivery', name: 'Service Delivery/year', type: 'currency', defaultValue: 12000, unit: '€', group: 'Operations' },
+        { id: 'travel', name: 'Travel & Transportation/year', type: 'currency', defaultValue: 6000, unit: '€', group: 'Operations' },
+        { id: 'materials', name: 'Materials & Supplies/year', type: 'currency', defaultValue: 8000, unit: '€', group: 'Materials' },
+        { id: 'insurance', name: 'Service Insurance/year', type: 'currency', defaultValue: 2500, unit: '€', group: 'Insurance' }
+      ],
+      staffing: [
+        { id: 'serviceManager', name: 'Service Manager', type: 'number', defaultValue: 1, unit: 'people', group: 'Management' },
+        { id: 'serviceManagerSal', name: 'Service Manager Salary', type: 'currency', defaultValue: 45000, unit: '€/year', group: 'Management' },
+        { id: 'technicians', name: 'Service Technicians', type: 'number', defaultValue: 2, unit: 'people', group: 'Technical' },
+        { id: 'technicianSal', name: 'Technician Salary', type: 'currency', defaultValue: 35000, unit: '€/year', group: 'Technical' }
       ]
     }
   },
