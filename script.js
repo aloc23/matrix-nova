@@ -55,13 +55,82 @@ function showTab(tabId) {
     btn.classList.toggle('active', isActive);
     if (isActive) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
   });
+  
+  // Handle specific tab initializations
+  if (tabId === 'investment-model') {
+    // Show P&L sub-tab by default
+    showSubTab('pnl');
+    updatePnL();
+  }
+  if (tabId === 'staffing-resourcing') {
+    updateStaffingResourcing();
+  }
+  if (tabId === 'execution-scheduling') {
+    // Show Gantt sub-tab by default
+    showSubTab('gantt');
+    renderGanttTaskList();
+    drawGantt();
+  }
+  if (tabId === 'project-files') {
+    loadProjectFiles();
+  }
+  if (tabId === 'scenarios') {
+    renderScenarioList();
+    renderScenarioDiff();
+  }
+  
+  // Legacy tab support
   if (tabId === 'pnl') updatePnL();
   if (tabId === 'roi') { updateROI(); drawTornadoChart(); }
   if (tabId === 'summary') generateSummaryReport();
   if (tabId === 'gantt') { renderGanttTaskList(); drawGantt(); }
-  if (tabId === 'scenarios') { renderScenarioList(); renderScenarioDiff(); }
 }
+
+// --- Sub-Tab Navigation ---
+function showSubTab(subTabId) {
+  // Find the parent tab content that contains the sub-tabs
+  const parentTabContent = document.querySelector('.tab-content:not(.hidden)');
+  if (!parentTabContent) return;
+  
+  // Update sub-tab buttons
+  parentTabContent.querySelectorAll('.sub-tab').forEach(btn => {
+    const isActive = btn.dataset.subtab === subTabId;
+    btn.classList.toggle('active', isActive);
+  });
+  
+  // Update sub-tab content - hide all first
+  parentTabContent.querySelectorAll('.sub-tab-content').forEach(content => {
+    content.classList.add('hidden');
+  });
+  
+  // Show the selected sub-tab content
+  const targetContent = parentTabContent.querySelector(`#${subTabId}-section`);
+  if (targetContent) {
+    targetContent.classList.remove('hidden');
+  }
+  
+  // Handle specific sub-tab initializations
+  if (subTabId === 'pnl') {
+    updatePnL();
+  } else if (subTabId === 'roi') {
+    updateROI();
+    drawTornadoChart();
+  } else if (subTabId === 'capex') {
+    updateCapExSummary();
+  } else if (subTabId === 'summary') {
+    generateSummaryReport();
+  } else if (subTabId === 'gantt') {
+    renderGanttTaskList();
+    drawGantt();
+  } else if (subTabId === 'milestones') {
+    loadMilestones();
+  } else if (subTabId === 'approvals') {
+    updatePaybackTracker();
+  }
+}
+
 window.showTab = showTab;
+window.showSubTab = showSubTab;
 
 // --- Padel Calculation ---
 window.calculatePadel = function() {
@@ -773,7 +842,608 @@ window.onload = function () {
   renderScenarioDiff?.();
   renderGanttTaskList();
   drawGantt();
+  
+  // Initialize new tab functionalities
+  initializeSubTabs();
+  initializeStaffingResourcing();
+  initializeProjectFiles();
+  initializeExecutionScheduling();
 };
+
+// Initialize sub-tab navigation
+function initializeSubTabs() {
+  // Add event listeners for sub-tab navigation
+  document.querySelectorAll('.sub-tab').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const subTabId = this.dataset.subtab;
+      if (subTabId) {
+        showSubTab(subTabId);
+      }
+    });
+  });
+  
+  // Add event listeners for collapsible sections
+  document.querySelectorAll('.collapsible-toggle').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const expanded = this.getAttribute('aria-expanded') === 'true';
+      this.setAttribute('aria-expanded', String(!expanded));
+      const content = document.getElementById(this.getAttribute('aria-controls'));
+      if (content) {
+        if (expanded) {
+          content.classList.add('collapsed');
+          this.textContent = '► ' + this.textContent.replace(/^▼|^►/, '').trim();
+        } else {
+          content.classList.remove('collapsed');
+          this.textContent = '▼ ' + this.textContent.replace(/^▼|^►/, '').trim();
+        }
+      }
+    });
+  });
+}
+
+// New functions for consolidated tabs
+function resetInvestmentModel() {
+  if (confirm('This will reset all investment model data and adjustments. Are you sure?')) {
+    // Reset adjustment sliders
+    document.getElementById('roiRevAdjust').value = 100;
+    document.getElementById('roiCostAdjust').value = 100;
+    document.getElementById('roiRevAdjustLabel').textContent = '100%';
+    document.getElementById('roiCostAdjustLabel').textContent = '100%';
+    
+    // Clear summaries
+    const pnlSummary = document.getElementById('pnlSummary');
+    if (pnlSummary) {
+      pnlSummary.innerHTML = '<p><em>Select a business type and project to view analysis</em></p>';
+    }
+    
+    const yearsToROI = document.getElementById('yearsToROIText');
+    if (yearsToROI) {
+      yearsToROI.innerHTML = '<div class="roi-summary">Select a business type and project to view ROI analysis</div>';
+    }
+    
+    // Clear tables
+    ['monthlyBreakdown', 'cashFlowTable', 'paybackTable', 'capexBreakdownTable'].forEach(tableId => {
+      const tbody = document.querySelector(`#${tableId} tbody`);
+      if (tbody) tbody.innerHTML = '';
+    });
+    
+    // Reset dynamic UI if needed
+    if (window.dynamicUI) {
+      window.dynamicUI.resetSelection();
+    }
+    
+    alert('Investment model has been reset successfully');
+  }
+}
+
+function exportInvestmentSummary() {
+  // Create a comprehensive investment summary for export
+  const padel = window.padelData || {};
+  const gym = gymIncluded() && window.gymData ? window.gymData : {};
+  
+  const summaryData = {
+    timestamp: new Date().toISOString(),
+    totalRevenue: (padel.revenue || 0) + (gym.revenue || 0),
+    totalCosts: (padel.costs || 0) + (gym.costs || 0),
+    totalProfit: (padel.profit || 0) + (gym.profit || 0),
+    totalInvestment: getTotalInvestment(),
+    projects: [
+      ...(padel.revenue ? [{type: 'Padel', ...padel}] : []),
+      ...(gym.revenue ? [{type: 'Gym', ...gym}] : [])
+    ]
+  };
+  
+  // Create and download JSON file
+  const dataStr = JSON.stringify(summaryData, null, 2);
+  const dataBlob = new Blob([dataStr], {type: 'application/json'});
+  const url = URL.createObjectURL(dataBlob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `investment-summary-${new Date().toISOString().split('T')[0]}.json`;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function updateCapExSummary() {
+  const totalInvestment = getTotalInvestment();
+  const padel = window.padelData || {};
+  const gym = gymIncluded() && window.gymData ? window.gymData : {};
+  
+  const capexSummary = document.getElementById('capexSummary');
+  if (capexSummary) {
+    capexSummary.innerHTML = `
+      <h3>Capital Expenditure Summary</h3>
+      <p><b>Total Investment:</b> €${totalInvestment.toLocaleString()}</p>
+      <p><b>Padel Investment:</b> €${(
+        getNumberInputValue('padelGround') +
+        getNumberInputValue('padelStructure') +
+        (getNumberInputValue('padelCourts') * getNumberInputValue('padelCourtCost')) +
+        getNumberInputValue('padelAmenities')
+      ).toLocaleString()}</p>
+      <p><b>Gym Investment:</b> €${(
+        getNumberInputValue('gymEquip') +
+        getNumberInputValue('gymFloor') +
+        getNumberInputValue('gymAmen')
+      ).toLocaleString()}</p>
+    `;
+  }
+  
+  // Update CapEx breakdown table
+  const capexTable = document.querySelector('#capexBreakdownTable tbody');
+  if (capexTable) {
+    capexTable.innerHTML = '';
+    
+    const investments = [
+      {category: 'Ground', project: 'Padel', amount: getNumberInputValue('padelGround')},
+      {category: 'Structure', project: 'Padel', amount: getNumberInputValue('padelStructure')},
+      {category: 'Courts', project: 'Padel', amount: getNumberInputValue('padelCourts') * getNumberInputValue('padelCourtCost')},
+      {category: 'Amenities', project: 'Padel', amount: getNumberInputValue('padelAmenities')},
+      {category: 'Equipment', project: 'Gym', amount: getNumberInputValue('gymEquip')},
+      {category: 'Flooring', project: 'Gym', amount: getNumberInputValue('gymFloor')},
+      {category: 'Amenities', project: 'Gym', amount: getNumberInputValue('gymAmen')}
+    ];
+    
+    investments.forEach(item => {
+      if (item.amount > 0) {
+        const percentage = ((item.amount / totalInvestment) * 100).toFixed(1);
+        capexTable.insertAdjacentHTML('beforeend',
+          `<tr>
+            <td>${item.category}</td>
+            <td>${item.project}</td>
+            <td>€${item.amount.toLocaleString()}</td>
+            <td>${percentage}%</td>
+          </tr>`
+        );
+      }
+    });
+  }
+}
+
+function initializeStaffingResourcing() {
+  // Initialize staffing and resourcing functionality
+  updateStaffingResourcing();
+}
+
+function updateStaffingResourcing() {
+  const padel = window.padelData || {};
+  const gym = gymIncluded() && window.gymData ? window.gymData : {};
+  
+  const totalStaffCosts = (padel.costs || 0) + (gym.costs || 0);
+  
+  const staffingSummary = document.getElementById('staffingSummary');
+  if (staffingSummary) {
+    staffingSummary.innerHTML = `
+      <h3>Staffing & Resource Summary</h3>
+      <p><b>Total Annual Staffing Costs:</b> €${totalStaffCosts.toLocaleString()}</p>
+      <p><b>Average Monthly Staffing:</b> €${(totalStaffCosts / 12).toLocaleString()}</p>
+    `;
+  }
+  
+  // Update staffing breakdown table
+  const staffingTable = document.querySelector('#staffingBreakdownTable tbody');
+  if (staffingTable) {
+    staffingTable.innerHTML = '';
+    
+    const staffingData = [
+      {role: 'Manager', project: 'Padel', count: getNumberInputValue('padelFtMgr'), salary: getNumberInputValue('padelFtMgrSal'), utilization: '100%'},
+      {role: 'Reception', project: 'Padel', count: getNumberInputValue('padelFtRec'), salary: getNumberInputValue('padelFtRecSal'), utilization: '100%'},
+      {role: 'Coach (FT)', project: 'Padel', count: getNumberInputValue('padelFtCoach'), salary: getNumberInputValue('padelFtCoachSal'), utilization: '100%'},
+      {role: 'Coach (PT)', project: 'Padel', count: getNumberInputValue('padelPtCoach'), salary: getNumberInputValue('padelPtCoachSal'), utilization: '50%'},
+      {role: 'Trainer (FT)', project: 'Gym', count: getNumberInputValue('gymFtTrainer'), salary: getNumberInputValue('gymFtTrainerSal'), utilization: '100%'},
+      {role: 'Trainer (PT)', project: 'Gym', count: getNumberInputValue('gymPtTrainer'), salary: getNumberInputValue('gymPtTrainerSal'), utilization: '50%'}
+    ];
+    
+    staffingData.forEach(item => {
+      if (item.count > 0) {
+        const annualCost = item.count * item.salary;
+        staffingTable.insertAdjacentHTML('beforeend',
+          `<tr>
+            <td>${item.role}</td>
+            <td>${item.project}</td>
+            <td>${item.count}</td>
+            <td>€${item.salary.toLocaleString()}</td>
+            <td>€${annualCost.toLocaleString()}</td>
+            <td>${item.utilization}</td>
+          </tr>`
+        );
+      }
+    });
+  }
+}
+
+function resetStaffingResourcing() {
+  if (confirm('This will reset all staffing and resourcing data. Are you sure?')) {
+    // Clear staffing summary
+    const staffingSummary = document.getElementById('staffingSummary');
+    if (staffingSummary) {
+      staffingSummary.innerHTML = '<p><em>Select a business type and project to view staffing analysis</em></p>';
+    }
+    
+    // Clear staffing tables
+    ['staffingBreakdownTable', 'staffingCostTable'].forEach(tableId => {
+      const tbody = document.querySelector(`#${tableId} tbody`);
+      if (tbody) tbody.innerHTML = '';
+    });
+    
+    alert('Staffing & resourcing data has been reset successfully');
+  }
+}
+
+function initializeExecutionScheduling() {
+  // Initialize milestone management
+  const milestoneForm = document.getElementById('milestoneForm');
+  if (milestoneForm) {
+    milestoneForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      addMilestone();
+    });
+  }
+  
+  // Initialize approval status handlers
+  ['budgetApproval', 'executiveApproval', 'technicalApproval', 'legalApproval'].forEach(id => {
+    const select = document.getElementById(id);
+    if (select) {
+      select.addEventListener('change', updateApprovalStatus);
+    }
+  });
+  
+  loadMilestones();
+  updatePaybackTracker();
+}
+
+function resetExecutionScheduling() {
+  if (confirm('This will reset all execution and scheduling data. Are you sure?')) {
+    // Reset Gantt tasks
+    ganttTasks = [
+      { id: '1', name: 'Feasibility Study & Business Plan', start: '2025-01-01', end: '2025-01-21', progress: 100 },
+      { id: '2', name: 'Site Selection & Acquisition', start: '2025-01-22', end: '2025-02-15', progress: 100 },
+      { id: '3', name: 'Planning & Permits', start: '2025-02-16', end: '2025-03-10', progress: 80 },
+      { id: '4', name: 'Design & Engineering', start: '2025-02-20', end: '2025-03-25', progress: 60 }
+    ];
+    saveGanttTasks();
+    renderGanttTaskList();
+    drawGantt();
+    
+    // Clear milestones
+    localStorage.removeItem('projectMilestones');
+    loadMilestones();
+    
+    // Reset approval status
+    ['budgetApproval', 'executiveApproval', 'technicalApproval', 'legalApproval'].forEach(id => {
+      const select = document.getElementById(id);
+      if (select) select.value = 'pending';
+    });
+    
+    updatePaybackTracker();
+    
+    alert('Execution & scheduling data has been reset successfully');
+  }
+}
+
+function addMilestone() {
+  const name = document.getElementById('milestoneName').value;
+  const date = document.getElementById('milestoneDate').value;
+  const status = document.getElementById('milestoneStatus').value;
+  const priority = document.getElementById('milestonePriority').value;
+  
+  if (!name || !date) {
+    alert('Please fill in all required fields');
+    return;
+  }
+  
+  const milestones = JSON.parse(localStorage.getItem('projectMilestones') || '[]');
+  const milestone = {
+    id: Date.now().toString(),
+    name,
+    date,
+    status,
+    priority,
+    created: new Date().toISOString()
+  };
+  
+  milestones.push(milestone);
+  localStorage.setItem('projectMilestones', JSON.stringify(milestones));
+  
+  // Reset form
+  document.getElementById('milestoneForm').reset();
+  
+  // Reload milestones
+  loadMilestones();
+}
+
+function loadMilestones() {
+  const milestones = JSON.parse(localStorage.getItem('projectMilestones') || '[]');
+  const milestonesList = document.getElementById('milestonesList');
+  
+  if (!milestonesList) return;
+  
+  milestonesList.innerHTML = '';
+  
+  if (milestones.length === 0) {
+    milestonesList.innerHTML = '<p class="file-placeholder">No milestones added yet. Use the form above to add project milestones.</p>';
+    return;
+  }
+  
+  milestones.forEach(milestone => {
+    const milestoneElement = document.createElement('div');
+    milestoneElement.className = `milestone-item ${milestone.status}`;
+    milestoneElement.innerHTML = `
+      <div class="milestone-info">
+        <h4>${milestone.name}</h4>
+        <p>Due: ${milestone.date} | Priority: ${milestone.priority} | Status: ${milestone.status}</p>
+      </div>
+      <div class="milestone-actions">
+        <button onclick="editMilestone('${milestone.id}')">Edit</button>
+        <button onclick="deleteMilestone('${milestone.id}')">Delete</button>
+      </div>
+    `;
+    milestonesList.appendChild(milestoneElement);
+  });
+}
+
+function deleteMilestone(id) {
+  if (confirm('Are you sure you want to delete this milestone?')) {
+    let milestones = JSON.parse(localStorage.getItem('projectMilestones') || '[]');
+    milestones = milestones.filter(m => m.id !== id);
+    localStorage.setItem('projectMilestones', JSON.stringify(milestones));
+    loadMilestones();
+  }
+}
+
+function updateApprovalStatus() {
+  const approvals = ['budgetApproval', 'executiveApproval', 'technicalApproval', 'legalApproval'];
+  const approvalData = {};
+  
+  approvals.forEach(id => {
+    const select = document.getElementById(id);
+    if (select) {
+      approvalData[id] = select.value;
+    }
+  });
+  
+  localStorage.setItem('approvalStatus', JSON.stringify(approvalData));
+  updatePaybackTracker();
+}
+
+function updatePaybackTracker() {
+  const padel = window.padelData || {};
+  const gym = gymIncluded() && window.gymData ? window.gymData : {};
+  
+  const totalInvestment = getTotalInvestment();
+  const annualProfit = (padel.profit || 0) + (gym.profit || 0);
+  const paybackYears = annualProfit > 0 ? Math.ceil(totalInvestment / annualProfit) : '∞';
+  
+  const paybackSummary = document.getElementById('paybackSummary');
+  if (paybackSummary) {
+    paybackSummary.innerHTML = `
+      <h4>Payback Analysis</h4>
+      <p><b>Total Investment:</b> €${totalInvestment.toLocaleString()}</p>
+      <p><b>Annual Profit:</b> €${annualProfit.toLocaleString()}</p>
+      <p><b>Estimated Payback Period:</b> ${paybackYears} years</p>
+    `;
+  }
+}
+
+function initializeProjectFiles() {
+  // Initialize file upload functionality
+  const fileUploadInput = document.getElementById('fileUploadInput');
+  if (fileUploadInput) {
+    fileUploadInput.addEventListener('change', handleFileUpload);
+  }
+  
+  // Initialize category filters
+  document.querySelectorAll('.category-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      filterFilesByCategory(this.dataset.category);
+    });
+  });
+  
+  loadProjectFiles();
+}
+
+function openFileUpload() {
+  const fileInput = document.getElementById('fileUploadInput');
+  if (fileInput) {
+    fileInput.click();
+  }
+}
+
+function handleFileUpload(event) {
+  const files = event.target.files;
+  if (files.length === 0) return;
+  
+  // Simulate file upload (in a real app, this would upload to a server)
+  const uploadedFiles = JSON.parse(localStorage.getItem('uploadedFiles') || '[]');
+  
+  Array.from(files).forEach(file => {
+    const fileData = {
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      category: determineFileCategory(file.name),
+      uploadDate: new Date().toISOString()
+    };
+    uploadedFiles.push(fileData);
+  });
+  
+  localStorage.setItem('uploadedFiles', JSON.stringify(uploadedFiles));
+  loadProjectFiles();
+  
+  // Reset the input
+  event.target.value = '';
+}
+
+function determineFileCategory(filename) {
+  const ext = filename.toLowerCase().split('.').pop();
+  
+  if (['pdf', 'doc', 'docx'].includes(ext)) {
+    if (filename.toLowerCase().includes('business') || filename.toLowerCase().includes('plan')) {
+      return 'business-plans';
+    } else if (filename.toLowerCase().includes('legal') || filename.toLowerCase().includes('contract')) {
+      return 'legal';
+    } else {
+      return 'reports';
+    }
+  } else if (['xls', 'xlsx', 'csv'].includes(ext)) {
+    return 'financial';
+  } else if (['dwg', 'cad', 'zip'].includes(ext)) {
+    return 'technical';
+  }
+  
+  return 'reports';
+}
+
+function loadProjectFiles() {
+  const files = JSON.parse(localStorage.getItem('uploadedFiles') || '[]');
+  const filesList = document.getElementById('filesList');
+  
+  if (!filesList) return;
+  
+  if (files.length === 0) {
+    filesList.innerHTML = `
+      <div class="file-placeholder">
+        <p>No files uploaded yet. Click "Upload Files" to get started.</p>
+        <p>You can also use the <a href="https://aloc23.github.io/pci_project_file_viewer/" target="_blank">Advanced File Viewer</a> for comprehensive file management.</p>
+      </div>
+    `;
+    return;
+  }
+  
+  filesList.innerHTML = '';
+  files.forEach(file => {
+    const fileElement = document.createElement('div');
+    fileElement.className = 'file-item';
+    fileElement.innerHTML = `
+      <div class="file-icon">📄</div>
+      <div class="file-info">
+        <div class="file-name">${file.name}</div>
+        <div class="file-meta">
+          <span class="file-size">${formatFileSize(file.size)}</span> | 
+          <span class="file-date">${new Date(file.uploadDate).toLocaleDateString()}</span>
+        </div>
+      </div>
+      <div class="file-actions">
+        <button onclick="deleteFile('${file.id}')">Delete</button>
+      </div>
+    `;
+    filesList.appendChild(fileElement);
+  });
+}
+
+function formatFileSize(bytes) {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function deleteFile(fileId) {
+  if (confirm('Are you sure you want to delete this file?')) {
+    let files = JSON.parse(localStorage.getItem('uploadedFiles') || '[]');
+    files = files.filter(f => f.id !== fileId);
+    localStorage.setItem('uploadedFiles', JSON.stringify(files));
+    loadProjectFiles();
+  }
+}
+
+function filterFilesByCategory(category) {
+  const files = JSON.parse(localStorage.getItem('uploadedFiles') || '[]');
+  let filteredFiles = files;
+  
+  if (category !== 'all') {
+    filteredFiles = files.filter(f => f.category === category);
+  }
+  
+  // Update display with filtered files
+  const filesList = document.getElementById('filesList');
+  if (!filesList) return;
+  
+  if (filteredFiles.length === 0) {
+    filesList.innerHTML = `
+      <div class="file-placeholder">
+        <p>No files found in this category.</p>
+      </div>
+    `;
+    return;
+  }
+  
+  filesList.innerHTML = '';
+  filteredFiles.forEach(file => {
+    const fileElement = document.createElement('div');
+    fileElement.className = 'file-item';
+    fileElement.innerHTML = `
+      <div class="file-icon">📄</div>
+      <div class="file-info">
+        <div class="file-name">${file.name}</div>
+        <div class="file-meta">
+          <span class="file-size">${formatFileSize(file.size)}</span> | 
+          <span class="file-date">${new Date(file.uploadDate).toLocaleDateString()}</span>
+        </div>
+      </div>
+      <div class="file-actions">
+        <button onclick="deleteFile('${file.id}')">Delete</button>
+      </div>
+    `;
+    filesList.appendChild(fileElement);
+  });
+}
+
+function searchFiles() {
+  const searchTerm = document.getElementById('fileSearch').value.toLowerCase();
+  const files = JSON.parse(localStorage.getItem('uploadedFiles') || '[]');
+  
+  const filteredFiles = files.filter(file => 
+    file.name.toLowerCase().includes(searchTerm)
+  );
+  
+  // Update display with search results
+  const filesList = document.getElementById('filesList');
+  if (!filesList) return;
+  
+  if (filteredFiles.length === 0) {
+    filesList.innerHTML = `
+      <div class="file-placeholder">
+        <p>No files found matching "${searchTerm}".</p>
+      </div>
+    `;
+    return;
+  }
+  
+  filesList.innerHTML = '';
+  filteredFiles.forEach(file => {
+    const fileElement = document.createElement('div');
+    fileElement.className = 'file-item';
+    fileElement.innerHTML = `
+      <div class="file-icon">📄</div>
+      <div class="file-info">
+        <div class="file-name">${file.name}</div>
+        <div class="file-meta">
+          <span class="file-size">${formatFileSize(file.size)}</span> | 
+          <span class="file-date">${new Date(file.uploadDate).toLocaleDateString()}</span>
+        </div>
+      </div>
+      <div class="file-actions">
+        <button onclick="deleteFile('${file.id}')">Delete</button>
+      </div>
+    `;
+    filesList.appendChild(fileElement);
+  });
+}
+
+// Make functions available globally
+window.resetInvestmentModel = resetInvestmentModel;
+window.exportInvestmentSummary = exportInvestmentSummary;
+window.resetStaffingResourcing = resetStaffingResourcing;
+window.resetExecutionScheduling = resetExecutionScheduling;
+window.openFileUpload = openFileUpload;
+window.handleFileUpload = handleFileUpload;
+window.searchFiles = searchFiles;
+window.deleteFile = deleteFile;
+window.deleteMilestone = deleteMilestone;
 
 // Initialize the generic P&L system
 function initializeGenericPLSystem() {
