@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Generic P&L Investment Planner</title>
+  <title>Matrix Nova - Financial Planning Platform</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="dark-theme.css">
+  <!-- Lucide Icons for professional SVG icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script> <!-- ADD THIS LINE -->
@@ -44,10 +47,10 @@
         <h2>Investment Model</h2>
         <div class="tab-actions">
           <button type="button" class="reset-btn" onclick="resetInvestmentModel()" title="Reset all investment data">
-            🔄 Reset
+            <i data-lucide="refresh-cw"></i> Reset
           </button>
           <button type="button" class="export-btn" onclick="exportInvestmentSummary()" title="Export investment summary">
-            📊 Export
+            <i data-lucide="download"></i> Export
           </button>
         </div>
       </div>
@@ -76,7 +79,7 @@
           </div>
           <div class="collapsible-section">
             <button type="button" class="collapsible-toggle" aria-expanded="true" aria-controls="monthlyBreakdownSection">
-              ▼ Monthly Breakdown
+              <i data-lucide="chevron-down"></i> Monthly Breakdown
             </button>
             <div class="collapsible-content" id="monthlyBreakdownSection">
               <table class="breakdown-table" id="monthlyBreakdown">
@@ -96,7 +99,7 @@
           </div>
           <div class="collapsible-section">
             <button type="button" class="collapsible-toggle" aria-expanded="true" aria-controls="cashFlowSection">
-              ▼ Cash Flow Analysis
+              <i data-lucide="chevron-down"></i> Cash Flow Analysis
             </button>
             <div class="collapsible-content" id="cashFlowSection">
               <table class="breakdown-table" id="cashFlowTable">
@@ -139,7 +142,7 @@
           
           <div class="collapsible-section">
             <button type="button" class="collapsible-toggle" aria-expanded="true" aria-controls="paybackSection">
-              ▼ Payback Analysis
+              <i data-lucide="chevron-down"></i> Payback Analysis
             </button>
             <div class="collapsible-content" id="paybackSection">
               <table class="breakdown-table" id="paybackTable">
@@ -168,7 +171,7 @@
           
           <div class="collapsible-section">
             <button type="button" class="collapsible-toggle" aria-expanded="true" aria-controls="sensitivitySection">
-              ▼ Sensitivity Analysis (Tornado Chart)
+              <i data-lucide="chevron-down"></i> Sensitivity Analysis (Tornado Chart)
             </button>
             <div class="collapsible-content" id="sensitivitySection">
               <div class="chart-container"><canvas id="tornadoChart" height="220"></canvas></div>
@@ -185,7 +188,7 @@
           <div id="capexSummary" class="summary"></div>
           <div class="collapsible-section">
             <button type="button" class="collapsible-toggle" aria-expanded="true" aria-controls="capexBreakdownSection">
-              ▼ Investment Breakdown by Category
+              <i data-lucide="chevron-down"></i> Investment Breakdown by Category
             </button>
             <div class="collapsible-content" id="capexBreakdownSection">
               <table class="breakdown-table" id="capexBreakdownTable">
@@ -231,7 +234,7 @@
       <div class="tab-header">
         <h2>Staffing & Resourcing</h2>
         <button type="button" class="reset-btn" onclick="resetStaffingResourcing()" title="Reset staffing data">
-          🔄 Reset
+          <i data-lucide="refresh-cw"></i> Reset
         </button>
       </div>
       
@@ -244,7 +247,7 @@
       
       <div class="collapsible-section">
         <button type="button" class="collapsible-toggle" aria-expanded="true" aria-controls="staffingBreakdownSection">
-          ▼ Staffing Breakdown by Role
+          <i data-lucide="chevron-down"></i> Staffing Breakdown by Role
         </button>
         <div class="collapsible-content" id="staffingBreakdownSection">
           <table class="breakdown-table" id="staffingBreakdownTable">
@@ -267,7 +270,7 @@
       
       <div class="collapsible-section">
         <button type="button" class="collapsible-toggle" aria-expanded="true" aria-controls="resourceUtilizationSection">
-          ▼ Resource Utilization Analysis
+          <i data-lucide="chevron-down"></i> Resource Utilization Analysis
         </button>
         <div class="collapsible-content" id="resourceUtilizationSection">
           <div class="charts-grid">
@@ -279,7 +282,7 @@
       
       <div class="collapsible-section">
         <button type="button" class="collapsible-toggle" aria-expanded="true" aria-controls="staffingCostSection">
-          ▼ Staffing Cost Analysis
+          <i data-lucide="chevron-down"></i> Staffing Cost Analysis
         </button>
         <div class="collapsible-content" id="staffingCostSection">
           <table class="breakdown-table" id="staffingCostTable">
@@ -305,7 +308,7 @@
       <div class="tab-header">
         <h2>Execution & Scheduling</h2>
         <button type="button" class="reset-btn" onclick="resetExecutionScheduling()" title="Reset scheduling data">
-          🔄 Reset
+          <i data-lucide="refresh-cw"></i> Reset
         </button>
       </div>
       
@@ -331,7 +334,7 @@
           
           <div class="collapsible-section">
             <button type="button" class="collapsible-toggle" aria-expanded="true" aria-controls="taskManagementSection">
-              ▼ Task Management
+              <i data-lucide="chevron-down"></i> Task Management
             </button>
             <div class="collapsible-content" id="taskManagementSection">
               <form id="ganttTaskForm">
@@ -453,7 +456,7 @@
       <div class="tab-header">
         <h2>Project Files & Documentation</h2>
         <button type="button" class="upload-btn" onclick="openFileUpload()" title="Upload files">
-          📁 Upload Files
+          <i data-lucide="upload"></i> Upload Files
         </button>
       </div>
       
@@ -475,11 +478,11 @@
         <div class="file-management-tools">
           <div class="search-files">
             <input type="text" id="fileSearch" placeholder="Search files..." />
-            <button onclick="searchFiles()">🔍</button>
+            <button onclick="searchFiles()"><i data-lucide="search"></i></button>
           </div>
           <div class="file-actions">
             <button onclick="window.open('https://aloc23.github.io/pci_project_file_viewer/', '_blank')" class="external-link">
-              📂 Advanced File Viewer
+              <i data-lucide="external-link"></i> Advanced File Viewer
             </button>
           </div>
         </div>
@@ -635,4 +638,45 @@
     </section>
   </main>
 </body>
+<script>
+  // Initialize icons with fallback
+  document.addEventListener('DOMContentLoaded', function() {
+    // Try to initialize Lucide icons if available
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    } else {
+      // Fallback: use CSS-based icons
+      console.log('Lucide icons not available, using CSS fallbacks');
+    }
+    
+    // Ensure all icon elements have proper styling
+    document.querySelectorAll('[data-lucide]').forEach(icon => {
+      icon.style.display = 'inline-block';
+      icon.style.width = '16px';
+      icon.style.height = '16px';
+    });
+  });
+  
+  // Update collapsible toggle icons
+  function updateCollapsibleIcon(button, isExpanded) {
+    const icon = button.querySelector('[data-lucide]');
+    if (icon) {
+      const newIcon = isExpanded ? 'chevron-down' : 'chevron-right';
+      icon.setAttribute('data-lucide', newIcon);
+      
+      // Try to recreate Lucide icons if available
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
+    }
+  }
+  
+  // Add event listeners for collapsible sections
+  document.querySelectorAll('.collapsible-toggle').forEach(toggle => {
+    toggle.addEventListener('click', function() {
+      const isExpanded = this.getAttribute('aria-expanded') === 'true';
+      updateCollapsibleIcon(this, !isExpanded);
+    });
+  });
+</script>
 </html>
