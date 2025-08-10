@@ -1,0 +1,62 @@
+/* ===== MODERN SVG ICON STYLES ===== */
+
+/* Icon container base styles */
+.icon {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+.icon-lg {
+  width: 20px;
+  height: 20px;
+}
+
+/* SVG Icons using CSS and pseudo-elements */
+.icon-reset::before {
+  content: "↻";
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.icon-download::before {
+  content: "⬇";
+  font-size: 14px;
+}
+
+.icon-upload::before {
+  content: "⬆";
+  font-size: 14px;
+}
+
+.icon-search::before {
+  content: "🔍";
+  font-size: 14px;
+}
+
+.icon-external::before {
+  content: "↗";
+  font-size: 14px;
+}
+
+.icon-chevron-down::after {
+  content: "▼";
+  font-size: 12px;
+  color: var(--accent-primary);
+  transition: transform var(--transition-normal);
+}
+
+.icon-chevron-up::after {
+  content: "▲";
+  font-size: 12px;
+  color: var(--accent-primary);
+}
+
+/* Button icon styles */
+button .icon,
+button::before {
+  color: inherit;
+  margin-right: 6px;
+}
