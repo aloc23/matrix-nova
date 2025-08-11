@@ -5,6 +5,7 @@ class PLCalculationEngine {
   constructor() {
     this.projectTypes = new Map();
     this.calculations = new Map();
+    this.debugMode = false; // Add debug mode
   }
 
   // Register a project type with its data
@@ -371,17 +372,6 @@ class PLCalculationEngine {
           salary = salary * hours * 12;
         }
         
-        // Handle CapEx project costs (hours * rate as one-time cost)
-        if (field.id === 'pmRate') {
-          const hours = this.getValue(data, 'projectManager', 0);
-          salary = salary * hours; // One-time project cost
-        }
-        
-        if (field.id === 'techRate') {
-          const hours = this.getValue(data, 'technicalStaff', 0);
-          salary = salary * hours; // One-time project cost
-        }
-        
         roles.get(baseName).salary = salary;
       } else if (field.type === 'number') {
         roles.get(baseName).count = this.getValue(data, field.id, field.defaultValue || 0);
@@ -394,26 +384,22 @@ class PLCalculationEngine {
     // Calculate total staffing costs
     for (const [roleName, role] of roles) {
       // Skip certain calculated fields to avoid double counting
-      if (roleName === 'managementFee' || roleName === 'handymanRate' || roleName === 'pmRate' || roleName === 'techRate') {
+      if (roleName === 'managementFee' || roleName === 'handymanRate') {
         continue;
       }
       
-      // For CapEx, add the one-time project costs and ongoing costs
-      if (roleName === 'ongoingStaff') {
-        totalCosts += role.salary; // This is annual ongoing cost
-      } else {
-        totalCosts += role.count * role.salary;
+      const roleCost = role.count * role.salary;
+      totalCosts += roleCost;
+      
+      // Debug logging for staffing costs
+      if (this.debugMode && roleCost > 0) {
+        console.log(`Staffing cost for ${roleName}: ${role.count} × ${role.salary} = ${roleCost}`);
       }
     }
     
-    // Add the calculated hourly costs for CapEx
-    const pmCost = this.getValue(data, 'projectManager', 0) * this.getValue(data, 'pmRate', 0);
-    const techCost = this.getValue(data, 'technicalStaff', 0) * this.getValue(data, 'techRate', 0);
-    const ongoingCost = this.getValue(data, 'ongoingStaff', 0);
-    
-    // For CapEx projects, include one-time project costs + annual ongoing
-    if (data.hasOwnProperty('projectManager')) {
-      totalCosts = pmCost + techCost + ongoingCost;
+    // Debug total staffing costs
+    if (this.debugMode) {
+      console.log(`Total staffing costs: €${totalCosts}`);
     }
     
     return totalCosts;
@@ -781,10 +767,21 @@ class PLCalculationEngine {
     const effectiveContracts = contracts * renewalRate * (1 + growthRate);
     return effectiveContracts * avgContractValue * 12;
   }
+
+  // Enable/disable debug mode
+  setDebugMode(enabled) {
+    this.debugMode = enabled;
+    console.log(`Calculation engine debug mode: ${enabled ? 'enabled' : 'disabled'}`);
+  }
 }
 
 // Global calculation engine instance
 window.calculationEngine = new PLCalculationEngine();
+
+// Enable debug mode in development
+if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+  window.calculationEngine.setDebugMode(true);
+}
 
 // Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {
