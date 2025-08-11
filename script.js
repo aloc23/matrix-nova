@@ -1621,6 +1621,75 @@ function initializeTemplates() {
     roiSensitivityContainer.innerHTML = sensitivityChart;
   }
   
+  // Initialize CapEx collapsible sections
+  const capexSectionsContainer = document.getElementById('capex-collapsible-sections');
+  if (capexSectionsContainer) {
+    const capexBreakdownTable = createCollapsibleTable(
+      'Investment Breakdown by Category',
+      'capexBreakdownSection',
+      'capexBreakdownTable',
+      ['Category', 'Project Type', 'Amount', '% of Total']
+    );
+    
+    capexSectionsContainer.innerHTML = capexBreakdownTable;
+  }
+  
+  // Initialize CapEx charts section
+  const capexChartsContainer = document.getElementById('capex-charts-section');
+  if (capexChartsContainer) {
+    const charts = [
+      {chartId: 'capexPieChart', height: '200'},
+      {chartId: 'capexBarChart', height: '200'}
+    ];
+    
+    const chartsSection = createSectionGroup('CapEx Visualization', createChartsGrid(charts));
+    capexChartsContainer.innerHTML = chartsSection;
+  }
+  
+  // Initialize Staffing header
+  const staffingHeaderContainer = document.getElementById('staffing-header');
+  if (staffingHeaderContainer) {
+    const actions = [
+      {
+        class: 'reset-btn icon-reset',
+        onclick: 'resetStaffingResourcing()',
+        title: 'Reset staffing data',
+        text: 'Reset'
+      }
+    ];
+    
+    staffingHeaderContainer.innerHTML = createTabHeader('Staffing & Resourcing', actions);
+  }
+  
+  // Initialize Staffing collapsible sections
+  const staffingSectionsContainer = document.getElementById('staffing-collapsible-sections');
+  if (staffingSectionsContainer) {
+    const staffingBreakdownTable = createCollapsibleTable(
+      'Staffing Breakdown by Role',
+      'staffingBreakdownSection',
+      'staffingBreakdownTable',
+      ['Role', 'Project Type', 'Count', 'Salary/Rate', 'Annual Cost', 'Utilization']
+    );
+    
+    const resourceUtilizationCharts = createCollapsibleCharts(
+      'Resource Utilization Analysis',
+      'resourceUtilizationSection',
+      [
+        {chartId: 'staffingPieChart', height: '200'},
+        {chartId: 'utilizationChart', height: '200'}
+      ]
+    );
+    
+    const staffingCostTable = createCollapsibleTable(
+      'Staffing Cost Analysis',
+      'staffingCostSection',
+      'staffingCostTable',
+      ['Department', 'Total Staff', 'Annual Cost', '% of Total', 'Cost per Employee']
+    );
+    
+    staffingSectionsContainer.innerHTML = staffingBreakdownTable + resourceUtilizationCharts + staffingCostTable;
+  }
+  
   // Re-initialize collapsible toggles for the new elements
   initializeCollapsibleToggles();
 }

@@ -161,6 +161,19 @@ function createTabHeader(title, actions = []) {
 }
 
 /**
+ * Creates a collapsible section containing multiple charts
+ * @param {string} title - The section title
+ * @param {string} contentId - The ID for the collapsible content area
+ * @param {Array} charts - Array of chart objects {chartId, height}
+ * @param {boolean} expanded - Whether the section should be expanded by default
+ * @returns {string} HTML string for the collapsible charts section
+ */
+function createCollapsibleCharts(title, contentId, charts, expanded = true) {
+  const chartsContent = createChartsGrid(charts);
+  return createCollapsibleSection(title, contentId, chartsContent, expanded);
+}
+
+/**
  * Creates a collapsible section containing a chart
  * @param {string} title - The section title
  * @param {string} contentId - The ID for the collapsible content area

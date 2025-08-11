@@ -120,33 +120,8 @@
             <p><em>Track and analyze capital investments across all project types</em></p>
           </div>
           <div id="capexSummary" class="summary"></div>
-          <div class="collapsible-section">
-            <button type="button" class="collapsible-toggle" aria-expanded="true" aria-controls="capexBreakdownSection">
-              Investment Breakdown by Category
-            </button>
-            <div class="collapsible-content" id="capexBreakdownSection">
-              <table class="breakdown-table" id="capexBreakdownTable">
-                <thead>
-                  <tr>
-                    <th>Category</th>
-                    <th>Project Type</th>
-                    <th>Amount</th>
-                    <th>% of Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <!-- JS fills rows here -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <div class="section-group">
-            <h3>CapEx Visualization</h3>
-            <div class="charts-grid">
-              <div class="chart-container"><canvas id="capexPieChart" height="200"></canvas></div>
-              <div class="chart-container"><canvas id="capexBarChart" height="200"></canvas></div>
-            </div>
-          </div>
+          <div id="capex-collapsible-sections"></div>
+          <div id="capex-charts-section"></div>
         </div>
         
         <!-- Investment Summary Sub-section -->
@@ -165,12 +140,7 @@
     
     <!-- Staffing & Resourcing Tab -->
     <section id="staffing-resourcing" class="tab-content hidden">
-      <div class="tab-header">
-        <h2>Staffing & Resourcing</h2>
-        <button type="button" class="reset-btn icon-reset" onclick="resetStaffingResourcing()" title="Reset staffing data">
-          Reset
-        </button>
-      </div>
+      <div id="staffing-header"></div>
       
       <div class="section-group">
         <h3>Resource Planning & Utilization</h3>
@@ -179,62 +149,7 @@
       
       <div id="staffingSummary" class="summary"></div>
       
-      <div class="collapsible-section">
-        <button type="button" class="collapsible-toggle" aria-expanded="true" aria-controls="staffingBreakdownSection">
-          Staffing Breakdown by Role
-        </button>
-        <div class="collapsible-content" id="staffingBreakdownSection">
-          <table class="breakdown-table" id="staffingBreakdownTable">
-            <thead>
-              <tr>
-                <th>Role</th>
-                <th>Project Type</th>
-                <th>Count</th>
-                <th>Salary/Rate</th>
-                <th>Annual Cost</th>
-                <th>Utilization</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- JS fills rows here -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-      
-      <div class="collapsible-section">
-        <button type="button" class="collapsible-toggle" aria-expanded="true" aria-controls="resourceUtilizationSection">
-          Resource Utilization Analysis
-        </button>
-        <div class="collapsible-content" id="resourceUtilizationSection">
-          <div class="charts-grid">
-            <div class="chart-container"><canvas id="staffingPieChart" height="200"></canvas></div>
-            <div class="chart-container"><canvas id="utilizationChart" height="200"></canvas></div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="collapsible-section">
-        <button type="button" class="collapsible-toggle" aria-expanded="true" aria-controls="staffingCostSection">
-          Staffing Cost Analysis
-        </button>
-        <div class="collapsible-content" id="staffingCostSection">
-          <table class="breakdown-table" id="staffingCostTable">
-            <thead>
-              <tr>
-                <th>Department</th>
-                <th>Total Staff</th>
-                <th>Annual Cost</th>
-                <th>% of Total</th>
-                <th>Cost per Employee</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- JS fills rows here -->
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <div id="staffing-collapsible-sections"></div>
     </section>
     
     <!-- Execution & Scheduling Tab -->
