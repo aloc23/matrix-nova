@@ -3,10 +3,106 @@
 
 class DynamicUIGenerator {
   constructor() {
-    this.selectedBusinessType = null;
-    this.selectedProjectType = null;
+    // Remove local state management - use centralized state manager instead
     this.formData = new Map();
     this.currentStep = 'business-type'; // 'business-type', 'project-type', 'analysis'
+    
+    // Initialize state change listeners
+    this.initializeStateListeners();
+  }
+
+  /**
+   * Initialize listeners for centralized state changes
+   * This ensures the UI stays in sync with the global state
+   */
+  initializeStateListeners() {
+    // Wait for state manager to be available
+    const initListeners = () => {
+      if (window.selectionStateManager) {
+        // Listen for business type changes
+        window.selectionStateManager.addEventListener('businessTypeChanged', (data) => {
+          this.onBusinessTypeChanged(data);
+        });
+
+        // Listen for project type changes
+        window.selectionStateManager.addEventListener('projectTypesChanged', (data) => {
+          this.onProjectTypesChanged(data);
+        });
+
+        // Listen for active project changes
+        window.selectionStateManager.addEventListener('activeProjectChanged', (data) => {
+          this.onActiveProjectChanged(data);
+        });
+      } else {
+        // Retry if state manager not yet available
+        setTimeout(initListeners, 100);
+      }
+    };
+    
+    initListeners();
+  }
+
+  /**
+   * Handle business type changes from centralized state
+   */
+  onBusinessTypeChanged(data) {
+    console.log('Dynamic UI: Business type changed', data);
+    
+    if (data.new) {
+      this.currentStep = 'project-type';
+      this.showProjectTypeSelector();
+      this.updateDropdownSelection(data.new);
+      this.showSelectedBusinessTypeInfo(data.new);
+    } else {
+      this.currentStep = 'business-type';
+      this.hideProjectTypeSelector();
+      this.hideAnalysisForm();
+    }
+  }
+
+  /**
+   * Handle project type changes from centralized state
+   */
+  onProjectTypesChanged(data) {
+    console.log('Dynamic UI: Project types changed', data);
+    
+    if (data.selectedProjects.length > 0) {
+      this.currentStep = 'analysis';
+      this.updateProjectTypeSelection(data.selectedProjects);
+      
+      // If there's an active project, show its analysis form
+      const activeProject = window.selectionStateManager.getActiveProjectType();
+      if (activeProject) {
+        this.showAnalysisForm(activeProject);
+      }
+    } else {
+      this.currentStep = 'project-type';
+      this.hideAnalysisForm();
+    }
+  }
+
+  /**
+   * Handle active project changes from centralized state
+   */
+  onActiveProjectChanged(data) {
+    console.log('Dynamic UI: Active project changed', data);
+    
+    if (data.new) {
+      this.showAnalysisForm(data.new);
+    }
+  }
+
+  // Getter methods that use centralized state
+  get selectedBusinessType() {
+    return window.selectionStateManager ? window.selectionStateManager.getBusinessType() : null;
+  }
+
+  get selectedProjectType() {
+    return window.selectionStateManager ? window.selectionStateManager.getActiveProjectType() : null;
+  }
+
+  get selectedProjectTypes() {
+    return window.selectionStateManager ? window.selectionStateManager.getSelectedProjectTypes() : [];
   }
 
   // Generate the main business type selection interface
@@ -219,11 +315,11 @@ class DynamicUIGenerator {
   // Update dropdown visual selection
   updateDropdownSelection(businessTypeId) {
     const trigger = document.getElementById('business-type-trigger');
-    const placeholder = trigger.querySelector('.dropdown-placeholder');
+    const placeholder = trigger?.querySelector('.dropdown-placeholder');
     const options = document.querySelectorAll('.dropdown-option');
     const businessCategory = window.BUSINESS_TYPE_CATEGORIES[businessTypeId];
     
-    if (!businessCategory) return;
+    if (!businessCategory || !placeholder) return;
     
     // Update trigger text
     placeholder.innerHTML = `
@@ -272,11 +368,14 @@ class DynamicUIGenerator {
 
   // Select a business type and show relevant project templates
   selectBusinessType(businessTypeId) {
-    this.selectedBusinessType = businessTypeId;
-    this.currentStep = 'project-type';
-    
-    // Show project type selector
-    this.showProjectTypeSelector();
+    // Use centralized state manager instead of local state
+    if (window.selectionStateManager) {
+      window.selectionStateManager.setBusinessType(businessTypeId);
+    } else {
+      console.warn('State manager not available, falling back to local state');
+      this.currentStep = 'project-type';
+      this.showProjectTypeSelector();
+    }
   }
 
   // Show project type templates for the selected business type
@@ -286,8 +385,11 @@ class DynamicUIGenerator {
     
     if (!projectTypeSelector || !projectTypeOptions) return;
     
-    const businessCategory = window.BUSINESS_TYPE_CATEGORIES[this.selectedBusinessType];
-    const projectTypes = window.projectTypeManager.getProjectsByBusinessType(this.selectedBusinessType);
+    const businessTypeId = this.selectedBusinessType;
+    if (!businessTypeId) return;
+    
+    const businessCategory = window.BUSINESS_TYPE_CATEGORIES[businessTypeId];
+    const projectTypes = window.projectTypeManager?.getProjectsByBusinessType(businessTypeId) || [];
     
     projectTypeSelector.style.display = 'block';
     
@@ -309,7 +411,7 @@ class DynamicUIGenerator {
         <h4>Available Templates</h4>
         <div class="project-template-grid">
           ${projectTypes.map(type => `
-            <div class="project-template-card ${this.selectedProjectType === type.id ? 'selected' : ''}" 
+            <div class="project-template-card ${this.selectedProjectTypes.includes(type.id) ? 'selected' : ''}" 
                  data-project-type="${type.id}"
                  onclick="dynamicUI.selectProjectType('${type.id}')">
               <div class="project-icon">${type.icon}</div>
@@ -335,32 +437,67 @@ class DynamicUIGenerator {
 
   // Select a project type and show the analysis form
   selectProjectType(projectTypeId) {
-    this.selectedProjectType = projectTypeId;
-    this.currentStep = 'analysis';
-    
-    // Update visual selection
-    document.querySelectorAll('.project-template-card').forEach(card => {
-      card.classList.remove('selected');
-    });
-    document.querySelector(`[data-project-type="${projectTypeId}"]`)?.classList.add('selected');
-    
-    // Initialize form data if not exists
-    if (!this.formData.has(projectTypeId)) {
-      const projectType = window.projectTypeManager.getProjectType(projectTypeId);
-      this.initializeFormData(projectTypeId, projectType);
+    // Use centralized state manager instead of local state
+    if (window.selectionStateManager) {
+      window.selectionStateManager.addProjectType(projectTypeId);
+      window.selectionStateManager.setActiveProjectType(projectTypeId);
+    } else {
+      console.warn('State manager not available, falling back to local state');
+      this.currentStep = 'analysis';
+      this.showAnalysisForm(projectTypeId);
     }
-    
-    // Show analysis form
-    this.showAnalysisForm();
+  }
+
+  /**
+   * Update project type selection visual indicators
+   */
+  updateProjectTypeSelection(selectedProjects) {
+    document.querySelectorAll('.project-template-card').forEach(card => {
+      const projectId = card.dataset.projectType;
+      if (projectId) {
+        const isSelected = selectedProjects.includes(projectId);
+        card.classList.toggle('selected', isSelected);
+      }
+    });
+  }
+
+  /**
+   * Hide project type selector
+   */
+  hideProjectTypeSelector() {
+    const projectTypeSelector = document.getElementById('project-type-selector');
+    if (projectTypeSelector) {
+      projectTypeSelector.style.display = 'none';
+    }
+  }
+
+  /**
+   * Hide analysis form
+   */
+  hideAnalysisForm() {
+    const formContainer = document.getElementById('business-analytics-form');
+    if (formContainer) {
+      formContainer.style.display = 'none';
+    }
   }
 
   // Show the analysis form for the selected project type
-  showAnalysisForm() {
+  showAnalysisForm(projectTypeId = null) {
     const formContainer = document.getElementById('business-analytics-form');
     if (!formContainer) return;
     
-    const projectType = window.projectTypeManager.getProjectType(this.selectedProjectType);
+    const activeProjectId = projectTypeId || this.selectedProjectType;
+    if (!activeProjectId) return;
+    
+    const projectType = window.projectTypeManager?.getProjectType(activeProjectId);
     const businessCategory = window.BUSINESS_TYPE_CATEGORIES[this.selectedBusinessType];
+    
+    if (!projectType || !businessCategory) return;
+    
+    // Initialize form data if not exists
+    if (!this.formData.has(activeProjectId)) {
+      this.initializeFormData(activeProjectId, projectType);
+    }
     
     formContainer.style.display = 'block';
     formContainer.innerHTML = `
@@ -393,15 +530,15 @@ class DynamicUIGenerator {
       </div>
       
       <div class="project-type-form">
-        ${this.generateProjectTypeForm(this.selectedProjectType, projectType)}
+        ${this.generateProjectTypeForm(activeProjectId, projectType)}
       </div>
       
-      <div id="${this.selectedProjectType}-summary" class="analysis-summary" aria-live="polite">
+      <div id="${activeProjectId}-summary" class="analysis-summary" aria-live="polite">
         <!-- Summary will be populated by calculations -->
       </div>
       
       <div class="analysis-actions">
-        <button type="button" class="calculate-btn" onclick="dynamicUI.calculateProjectType('${this.selectedProjectType}')">
+        <button type="button" class="calculate-btn" onclick="dynamicUI.calculateProjectType('${activeProjectId}')">
           Calculate ${projectType.name}
         </button>
         <button type="button" class="save-scenario-btn" onclick="dynamicUI.saveCurrentScenario()">
@@ -411,23 +548,41 @@ class DynamicUIGenerator {
     `;
     
     // Auto-calculate on form load
-    setTimeout(() => this.calculateProjectType(this.selectedProjectType), 100);
+    setTimeout(() => this.calculateProjectType(activeProjectId), 100);
   }
 
   // Reset selection to start over
   resetSelection() {
-    this.selectedBusinessType = null;
-    this.selectedProjectType = null;
-    this.currentStep = 'business-type';
-    
-    // Hide secondary sections
-    document.getElementById('project-type-selector').style.display = 'none';
-    document.getElementById('business-analytics-form').style.display = 'none';
-    
-    // Reset business type selection
-    document.querySelectorAll('.business-type-card').forEach(card => {
-      card.classList.remove('selected');
-    });
+    // Use centralized state manager to reset all selections
+    if (window.selectionStateManager) {
+      window.selectionStateManager.resetState();
+    } else {
+      // Fallback to local reset
+      this.currentStep = 'business-type';
+      
+      // Hide secondary sections
+      this.hideProjectTypeSelector();
+      this.hideAnalysisForm();
+      
+      // Reset business type selection visuals
+      document.querySelectorAll('.business-type-card').forEach(card => {
+        card.classList.remove('selected');
+      });
+      
+      // Reset dropdown
+      const trigger = document.getElementById('business-type-trigger');
+      const placeholder = trigger?.querySelector('.dropdown-placeholder');
+      if (placeholder) {
+        placeholder.innerHTML = 'Select your business type...';
+        placeholder.classList.remove('has-selection');
+      }
+      
+      // Hide business type info
+      const infoContainer = document.getElementById('selected-business-type-info');
+      if (infoContainer) {
+        infoContainer.style.display = 'none';
+      }
+    }
   }
 
   // Helper method to get revenue model description
