@@ -799,6 +799,12 @@ function highlightToday() {
 
 // --- Initialization ---
 window.onload = function () {
+  // Initialize templates
+  initializeTemplates();
+  
+  // Initialize sub-tab navigation
+  initializeSubTabNavigation();
+  
   // Initialize the generic P&L system
   initializeGenericPLSystem();
   
@@ -1552,3 +1558,175 @@ window.resetROITab = function() {
     alert('ROI tab has been reset successfully');
   }
 };
+
+// --- Template Initialization ---
+function initializeTemplates() {
+  // Initialize P&L collapsible sections
+  const pnlSectionsContainer = document.getElementById('pnl-collapsible-sections');
+  if (pnlSectionsContainer) {
+    const monthlyBreakdownTable = createCollapsibleTable(
+      'Monthly Breakdown', 
+      'monthlyBreakdownSection', 
+      'monthlyBreakdown', 
+      ['Month', 'Revenue', 'Costs', 'Profit']
+    );
+    
+    const cashFlowTable = createCollapsibleTable(
+      'Cash Flow Analysis', 
+      'cashFlowSection', 
+      'cashFlowTable', 
+      ['Month', 'Opening', 'Inflow', 'Outflow', 'Closing']
+    );
+    
+    pnlSectionsContainer.innerHTML = monthlyBreakdownTable + cashFlowTable;
+  }
+  
+  // Initialize ROI collapsible sections
+  const roiSectionsContainer = document.getElementById('roi-collapsible-sections');
+  if (roiSectionsContainer) {
+    const paybackTable = createCollapsibleTable(
+      'Payback Analysis',
+      'paybackSection',
+      'paybackTable',
+      ['Year', 'Cumulative Profit']
+    );
+    
+    roiSectionsContainer.innerHTML = paybackTable;
+  }
+  
+  // Initialize ROI charts section
+  const roiChartsContainer = document.getElementById('roi-charts-section');
+  if (roiChartsContainer) {
+    const charts = [
+      {chartId: 'roiLineChart', height: '180'},
+      {chartId: 'roiBarChart', height: '180'},
+      {chartId: 'roiPieChart', height: '180'},
+      {chartId: 'roiBreakEvenChart', height: '180'}
+    ];
+    
+    const chartsSection = createSectionGroup('ROI Visualizations', createChartsGrid(charts));
+    roiChartsContainer.innerHTML = chartsSection;
+  }
+  
+  // Initialize ROI sensitivity section
+  const roiSensitivityContainer = document.getElementById('roi-sensitivity-section');
+  if (roiSensitivityContainer) {
+    const sensitivityChart = createCollapsibleChart(
+      'Sensitivity Analysis (Tornado Chart)',
+      'sensitivitySection',
+      'tornadoChart',
+      '220'
+    );
+    
+    roiSensitivityContainer.innerHTML = sensitivityChart;
+  }
+  
+  // Initialize CapEx collapsible sections
+  const capexSectionsContainer = document.getElementById('capex-collapsible-sections');
+  if (capexSectionsContainer) {
+    const capexBreakdownTable = createCollapsibleTable(
+      'Investment Breakdown by Category',
+      'capexBreakdownSection',
+      'capexBreakdownTable',
+      ['Category', 'Project Type', 'Amount', '% of Total']
+    );
+    
+    capexSectionsContainer.innerHTML = capexBreakdownTable;
+  }
+  
+  // Initialize CapEx charts section
+  const capexChartsContainer = document.getElementById('capex-charts-section');
+  if (capexChartsContainer) {
+    const charts = [
+      {chartId: 'capexPieChart', height: '200'},
+      {chartId: 'capexBarChart', height: '200'}
+    ];
+    
+    const chartsSection = createSectionGroup('CapEx Visualization', createChartsGrid(charts));
+    capexChartsContainer.innerHTML = chartsSection;
+  }
+  
+  // Initialize Staffing header
+  const staffingHeaderContainer = document.getElementById('staffing-header');
+  if (staffingHeaderContainer) {
+    const actions = [
+      {
+        class: 'reset-btn icon-reset',
+        onclick: 'resetStaffingResourcing()',
+        title: 'Reset staffing data',
+        text: 'Reset'
+      }
+    ];
+    
+    staffingHeaderContainer.innerHTML = createTabHeader('Staffing & Resourcing', actions);
+  }
+  
+  // Initialize Staffing collapsible sections
+  const staffingSectionsContainer = document.getElementById('staffing-collapsible-sections');
+  if (staffingSectionsContainer) {
+    const staffingBreakdownTable = createCollapsibleTable(
+      'Staffing Breakdown by Role',
+      'staffingBreakdownSection',
+      'staffingBreakdownTable',
+      ['Role', 'Project Type', 'Count', 'Salary/Rate', 'Annual Cost', 'Utilization']
+    );
+    
+    const resourceUtilizationCharts = createCollapsibleCharts(
+      'Resource Utilization Analysis',
+      'resourceUtilizationSection',
+      [
+        {chartId: 'staffingPieChart', height: '200'},
+        {chartId: 'utilizationChart', height: '200'}
+      ]
+    );
+    
+    const staffingCostTable = createCollapsibleTable(
+      'Staffing Cost Analysis',
+      'staffingCostSection',
+      'staffingCostTable',
+      ['Department', 'Total Staff', 'Annual Cost', '% of Total', 'Cost per Employee']
+    );
+    
+    staffingSectionsContainer.innerHTML = staffingBreakdownTable + resourceUtilizationCharts + staffingCostTable;
+  }
+  
+  // Re-initialize collapsible toggles for the new elements
+  initializeCollapsibleToggles();
+}
+
+// --- Initialize Sub-Tab Navigation ---
+function initializeSubTabNavigation() {
+  document.querySelectorAll('.sub-tab').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const subTabId = this.getAttribute('data-subtab');
+      if (subTabId) {
+        showSubTab(subTabId);
+      }
+    });
+  });
+}
+
+// --- Initialize Collapsible Toggles ---
+function initializeCollapsibleToggles() {
+  // Add event listeners for collapsible sections  
+  document.querySelectorAll('.collapsible-toggle').forEach(btn => {
+    // Remove existing listeners to avoid duplicates
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    
+    newBtn.addEventListener('click', function() {
+      const expanded = this.getAttribute('aria-expanded') === 'true';
+      this.setAttribute('aria-expanded', String(!expanded));
+      const content = document.getElementById(this.getAttribute('aria-controls'));
+      if (content) {
+        if (expanded) {
+          content.classList.add('collapsed');
+          this.textContent = '► ' + this.textContent.replace(/^▼|^►/, '').trim();
+        } else {
+          content.classList.remove('collapsed');
+          this.textContent = '▼ ' + this.textContent.replace(/^▼|^►/, '').trim();
+        }
+      }
+    });
+  });
+}
