@@ -240,52 +240,113 @@ window.calculateGym = function() {
   updatePnL();
   updateROI();
 };
+// Legacy compatibility functions that now use centralized state
 function gymIncluded() {
-  return document.getElementById('includeGym')?.checked ?? true;
+  return window.selectionStateManager ? window.selectionStateManager.isGymIncluded() : 
+         document.getElementById('includeGym')?.checked ?? true;
 }
+
 function gymIncludedROI() {
-  return document.getElementById('includeGymROI')?.checked ?? true;
+  return window.selectionStateManager ? window.selectionStateManager.isGymIncluded() : 
+         document.getElementById('includeGymROI')?.checked ?? true;
+}
+
+function padelIncluded() {
+  return window.selectionStateManager ? window.selectionStateManager.isPadelIncluded() : true;
 }
 
 // --- PnL Calculation and Charts ---
 function updatePnL() {
-  const padel = window.padelData || { revenue: 0, costs: 0, profit: 0, monthlyRevenue: 0, monthlyCosts: 0, monthlyProfit: 0 };
-  const gym = gymIncluded() && window.gymData ? window.gymData : { revenue: 0, costs: 0, profit: 0, monthlyRevenue: 0, monthlyCosts: 0, monthlyProfit: 0 };
-  const totalRevenue = padel.revenue + gym.revenue;
-  const totalCosts = padel.costs + gym.costs;
-  const totalProfit = padel.profit + gym.profit;
+  // Get selected projects from centralized state
+  const selectedProjects = window.selectionStateManager ? 
+    window.selectionStateManager.getSelectedProjectTypes() : [];
+  
+  let totalRevenue = 0;
+  let totalCosts = 0;
+  let totalProfit = 0;
+  let monthlyRevenue = 0;
+  let monthlyCosts = 0;
+  let monthlyProfit = 0;
+  
+  const projectData = [];
+  
+  // Calculate totals for selected projects using centralized state
+  selectedProjects.forEach(projectId => {
+    const result = window.calculationEngine?.getCalculation(projectId);
+    if (result) {
+      totalRevenue += result.revenue.annual;
+      totalCosts += result.costs.annual;
+      totalProfit += result.profit;
+      monthlyRevenue += result.revenue.monthly;
+      monthlyCosts += result.costs.annual / 12;
+      monthlyProfit += result.profit / 12;
+      
+      projectData.push({
+        name: result.typeName,
+        revenue: result.revenue.annual,
+        costs: result.costs.annual,
+        profit: result.profit
+      });
+    }
+  });
+  
+  // Fallback to legacy calculations if no centralized state
+  if (selectedProjects.length === 0) {
+    const padel = window.padelData || { revenue: 0, costs: 0, profit: 0, monthlyRevenue: 0, monthlyCosts: 0, monthlyProfit: 0 };
+    const gym = gymIncluded() && window.gymData ? window.gymData : { revenue: 0, costs: 0, profit: 0, monthlyRevenue: 0, monthlyCosts: 0, monthlyProfit: 0 };
+    
+    totalRevenue = padel.revenue + gym.revenue;
+    totalCosts = padel.costs + gym.costs;
+    totalProfit = padel.profit + gym.profit;
+    monthlyRevenue = padel.monthlyRevenue + gym.monthlyRevenue;
+    monthlyCosts = padel.monthlyCosts + gym.monthlyCosts;
+    monthlyProfit = padel.monthlyProfit + gym.monthlyProfit;
+    
+    if (padel.revenue > 0) projectData.push({ name: 'Padel', revenue: padel.revenue, costs: padel.costs, profit: padel.profit });
+    if (gym.revenue > 0) projectData.push({ name: 'Gym', revenue: gym.revenue, costs: gym.costs, profit: gym.profit });
+  }
+  
   const summaryDiv = document.getElementById('pnlSummary');
+  const projectsList = projectData.length > 0 ? 
+    projectData.map(p => p.name).join(', ') : 
+    'No projects selected';
+    
   summaryDiv.innerHTML = `
+    <p><strong>Selected Projects:</strong> ${projectsList}</p>
     <p><b>Total Revenue:</b> €${Math.round(totalRevenue).toLocaleString('en-US')}</p>
     <p><b>Total Costs:</b> €${Math.round(totalCosts).toLocaleString('en-US')}</p>
     <p><b>Net Profit:</b> €${Math.round(totalProfit).toLocaleString('en-US')}</p>
   `;
+  
   // Monthly breakdown
   const tbody = document.querySelector('#monthlyBreakdown tbody');
   tbody.innerHTML = '';
   for (let i = 1; i <= 12; i++) {
-    const rev = (padel.monthlyRevenue + gym.monthlyRevenue);
-    const costs = (padel.monthlyCosts + gym.monthlyCosts);
-    const profit = (padel.monthlyProfit + gym.monthlyProfit);
+    const rev = monthlyRevenue || (totalRevenue / 12);
+    const costs = monthlyCosts || (totalCosts / 12);
+    const profit = monthlyProfit || (totalProfit / 12);
     const row = `<tr><td>${i}</td><td>€${rev.toFixed(2)}</td><td>€${costs.toFixed(2)}</td><td>€${profit.toFixed(2)}</td></tr>`;
     tbody.insertAdjacentHTML('beforeend', row);
   }
+  
   // Cash flow calculation
   const cashFlowBody = document.querySelector('#cashFlowTable tbody');
   let opening = 0;
   cashFlowBody.innerHTML = '';
   for (let i = 1; i <= 12; i++) {
-    const inflow = (padel.monthlyRevenue + gym.monthlyRevenue);
-    const outflow = (padel.monthlyCosts + gym.monthlyCosts);
+    const inflow = monthlyRevenue || (totalRevenue / 12);
+    const outflow = monthlyCosts || (totalCosts / 12);
     const closing = opening + inflow - outflow;
     cashFlowBody.insertAdjacentHTML('beforeend',
       `<tr><td>${i}</td><td>€${opening.toFixed(2)}</td><td>€${inflow.toFixed(2)}</td><td>€${outflow.toFixed(2)}</td><td>€${closing.toFixed(2)}</td></tr>`);
     opening = closing;
   }
+  
   // Charts
   if (pnlChart) pnlChart.destroy();
   if (profitTrendChart) profitTrendChart.destroy();
   if (costPieChart) costPieChart.destroy();
+  
   // PnL Chart
   const ctxPnl = document.getElementById('pnlChart').getContext('2d');
   pnlChart = new Chart(ctxPnl, {
@@ -300,6 +361,7 @@ function updatePnL() {
     },
     options: { responsive: true, maintainAspectRatio: false }
   });
+  
   // Profit Trend Chart
   const ctxProfitTrend = document.getElementById('profitTrendChart').getContext('2d');
   const monthlyProfits = new Array(12).fill(totalProfit / 12);
@@ -319,15 +381,23 @@ function updatePnL() {
     },
     options: { responsive: true, maintainAspectRatio: false }
   });
-  // Cost Pie Chart
+  
+  // Cost Pie Chart - show breakdown by project
   const ctxCostPie = document.getElementById('costPieChart').getContext('2d');
+  const costLabels = projectData.length > 0 ? 
+    projectData.map(p => `${p.name} Costs`) : 
+    ['Padel Costs', 'Gym Costs'];
+  const costData = projectData.length > 0 ? 
+    projectData.map(p => p.costs) : 
+    [window.padelData?.costs || 0, gymIncluded() ? (window.gymData?.costs || 0) : 0];
+    
   costPieChart = new Chart(ctxCostPie, {
     type: 'pie',
     data: {
-      labels: ['Padel Costs', 'Gym Costs'],
+      labels: costLabels,
       datasets: [{
-        data: [padel.costs, gym.costs],
-        backgroundColor: ['#f39c12', '#3498db']
+        data: costData,
+        backgroundColor: ['#f39c12', '#3498db', '#e74c3c', '#2ecc71', '#9b59b6']
       }]
     },
     options: { responsive: true, maintainAspectRatio: false }
@@ -808,6 +878,9 @@ window.onload = function () {
   // Initialize the generic P&L system
   initializeGenericPLSystem();
   
+  // Initialize centralized state management system
+  initializeCentralizedStateManagement();
+  
   // Set up tab navigation
   document.querySelectorAll('nav.tabs button').forEach(btn => {
     btn.addEventListener('click', function () {
@@ -855,6 +928,76 @@ window.onload = function () {
   initializeProjectFiles();
   initializeExecutionScheduling();
 };
+
+/**
+ * Initialize the centralized state management system
+ * This connects all tabs to use the same state for business/project selection
+ */
+function initializeCentralizedStateManagement() {
+  // Wait for state manager to be available
+  if (!window.selectionStateManager) {
+    setTimeout(initializeCentralizedStateManagement, 100);
+    return;
+  }
+
+  console.log('Initializing centralized state management...');
+
+  // Set up state change listeners for Investment Model tab
+  window.selectionStateManager.addEventListener('projectTypesChanged', (data) => {
+    console.log('Investment Model: Project types changed', data);
+    updatePnL();
+    updateROI();
+  });
+
+  // Set up state change listeners for Staffing tab
+  window.selectionStateManager.addEventListener('projectTypesChanged', (data) => {
+    console.log('Staffing: Project types changed', data);
+    updateStaffingResourcing();
+  });
+
+  // Set up state change listeners for all calculation updates
+  window.selectionStateManager.addEventListener('activeProjectChanged', (data) => {
+    console.log('Active project changed, updating calculations', data);
+    if (data.new) {
+      // Trigger recalculation for the new active project
+      if (typeof window.dynamicUI?.calculateProjectType === 'function') {
+        window.dynamicUI.calculateProjectType(data.new);
+      }
+    }
+  });
+
+  // Migrate any existing legacy state
+  migrateLegacyState();
+
+  console.log('Centralized state management initialized');
+}
+
+/**
+ * Migrate any existing legacy state to the centralized system
+ */
+function migrateLegacyState() {
+  // Check if dynamic UI has existing selections
+  if (window.dynamicUI) {
+    // Try to get existing selections from the old dynamic UI system
+    const businessType = window.dynamicUI.selectedBusinessType;
+    const projectType = window.dynamicUI.selectedProjectType;
+    
+    if (businessType && projectType) {
+      console.log('Migrating legacy state:', { businessType, projectType });
+      window.selectionStateManager.migrateFromDynamicUI(businessType, projectType);
+    }
+  }
+
+  // Check legacy gym/padel checkboxes and migrate if needed
+  const gymCheckbox = document.getElementById('includeGym');
+  const gymROICheckbox = document.getElementById('includeGymROI');
+  
+  if (gymCheckbox?.checked || gymROICheckbox?.checked) {
+    console.log('Migrating legacy gym selection');
+    window.selectionStateManager.setBusinessType('member');
+    window.selectionStateManager.addProjectType('gym');
+  }
+}
 
 // Initialize sub-tab navigation
 function initializeSubTabs() {
@@ -1011,15 +1154,69 @@ function initializeStaffingResourcing() {
 }
 
 function updateStaffingResourcing() {
-  const padel = window.padelData || {};
-  const gym = gymIncluded() && window.gymData ? window.gymData : {};
+  // Get selected projects from centralized state
+  const selectedProjects = window.selectionStateManager ? 
+    window.selectionStateManager.getSelectedProjectTypes() : [];
   
-  const totalStaffCosts = (padel.costs || 0) + (gym.costs || 0);
+  let totalStaffCosts = 0;
+  const staffingData = [];
+  
+  // Calculate costs for each selected project type
+  selectedProjects.forEach(projectId => {
+    const result = window.calculationEngine?.getCalculation(projectId);
+    if (result) {
+      totalStaffCosts += result.costs.staffing || 0;
+      
+      // Add staffing details for this project
+      if (result.breakdown?.staffing?.roles) {
+        Object.entries(result.breakdown.staffing.roles).forEach(([roleName, role]) => {
+          if (role.count > 0) {
+            staffingData.push({
+              role: role.name || roleName,
+              project: result.typeName,
+              count: role.count,
+              salary: role.salary,
+              totalCost: role.totalCost,
+              utilization: '100%', // Default utilization
+              group: role.group || 'Staff'
+            });
+          }
+        });
+      }
+    }
+  });
+  
+  // Fallback to legacy calculation if no centralized state
+  if (selectedProjects.length === 0) {
+    const padel = window.padelData || {};
+    const gym = gymIncluded() && window.gymData ? window.gymData : {};
+    totalStaffCosts = (padel.costs || 0) + (gym.costs || 0);
+    
+    // Add legacy staffing data
+    const legacyStaffingData = [
+      {role: 'Manager', project: 'Padel', count: getNumberInputValue('padelFtMgr'), salary: getNumberInputValue('padelFtMgrSal'), utilization: '100%'},
+      {role: 'Reception', project: 'Padel', count: getNumberInputValue('padelFtRec'), salary: getNumberInputValue('padelFtRecSal'), utilization: '100%'},
+      {role: 'Coach (FT)', project: 'Padel', count: getNumberInputValue('padelFtCoach'), salary: getNumberInputValue('padelFtCoachSal'), utilization: '100%'},
+      {role: 'Coach (PT)', project: 'Padel', count: getNumberInputValue('padelPtCoach'), salary: getNumberInputValue('padelPtCoachSal'), utilization: '50%'},
+      {role: 'Trainer (FT)', project: 'Gym', count: getNumberInputValue('gymFtTrainer'), salary: getNumberInputValue('gymFtTrainerSal'), utilization: '100%'},
+      {role: 'Trainer (PT)', project: 'Gym', count: getNumberInputValue('gymPtTrainer'), salary: getNumberInputValue('gymPtTrainerSal'), utilization: '50%'}
+    ];
+    
+    staffingData.push(...legacyStaffingData.filter(item => item.count > 0));
+  }
   
   const staffingSummary = document.getElementById('staffingSummary');
   if (staffingSummary) {
+    const projectsList = selectedProjects.length > 0 ? 
+      selectedProjects.map(id => {
+        const project = window.projectTypeManager?.getProjectType(id);
+        return project ? project.name : id;
+      }).join(', ') : 
+      'Legacy Projects (Padel/Gym)';
+      
     staffingSummary.innerHTML = `
       <h3>Staffing & Resource Summary</h3>
+      <p><strong>Selected Projects:</strong> ${projectsList}</p>
       <p><b>Total Annual Staffing Costs:</b> €${totalStaffCosts.toLocaleString()}</p>
       <p><b>Average Monthly Staffing:</b> €${(totalStaffCosts / 12).toLocaleString()}</p>
     `;
@@ -1030,30 +1227,30 @@ function updateStaffingResourcing() {
   if (staffingTable) {
     staffingTable.innerHTML = '';
     
-    const staffingData = [
-      {role: 'Manager', project: 'Padel', count: getNumberInputValue('padelFtMgr'), salary: getNumberInputValue('padelFtMgrSal'), utilization: '100%'},
-      {role: 'Reception', project: 'Padel', count: getNumberInputValue('padelFtRec'), salary: getNumberInputValue('padelFtRecSal'), utilization: '100%'},
-      {role: 'Coach (FT)', project: 'Padel', count: getNumberInputValue('padelFtCoach'), salary: getNumberInputValue('padelFtCoachSal'), utilization: '100%'},
-      {role: 'Coach (PT)', project: 'Padel', count: getNumberInputValue('padelPtCoach'), salary: getNumberInputValue('padelPtCoachSal'), utilization: '50%'},
-      {role: 'Trainer (FT)', project: 'Gym', count: getNumberInputValue('gymFtTrainer'), salary: getNumberInputValue('gymFtTrainerSal'), utilization: '100%'},
-      {role: 'Trainer (PT)', project: 'Gym', count: getNumberInputValue('gymPtTrainer'), salary: getNumberInputValue('gymPtTrainerSal'), utilization: '50%'}
-    ];
-    
     staffingData.forEach(item => {
-      if (item.count > 0) {
-        const annualCost = item.count * item.salary;
-        staffingTable.insertAdjacentHTML('beforeend',
-          `<tr>
-            <td>${item.role}</td>
-            <td>${item.project}</td>
-            <td>${item.count}</td>
-            <td>€${item.salary.toLocaleString()}</td>
-            <td>€${annualCost.toLocaleString()}</td>
-            <td>${item.utilization}</td>
-          </tr>`
-        );
-      }
+      const annualCost = item.totalCost || (item.count * item.salary);
+      staffingTable.insertAdjacentHTML('beforeend',
+        `<tr>
+          <td>${item.role}</td>
+          <td>${item.project}</td>
+          <td>${item.count}</td>
+          <td>€${item.salary.toLocaleString()}</td>
+          <td>€${annualCost.toLocaleString()}</td>
+          <td>${item.utilization}</td>
+        </tr>`
+      );
     });
+    
+    // Add a row showing no data if empty
+    if (staffingData.length === 0) {
+      staffingTable.insertAdjacentHTML('beforeend',
+        `<tr>
+          <td colspan="6" style="text-align: center; color: #666;">
+            No staffing data available. Select a business type and project to view staffing analysis.
+          </td>
+        </tr>`
+      );
+    }
   }
 }
 
