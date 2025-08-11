@@ -17,6 +17,7 @@
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <script src="config.js" defer></script>
   <script src="calculations.js" defer></script>
+  <script src="templates.js" defer></script>
   <script src="dynamic-ui.js" defer></script>
   <script src="script.js" defer></script>
   <script>
@@ -29,6 +30,16 @@
   </script>
 </head>
 <body>
+  <main>
+    <nav class="tabs" role="tablist">
+      <button type="button" data-tab="business-analytics" class="active">Business Analytics</button>
+      <button type="button" data-tab="investment-model">Investment Model</button>
+      <button type="button" data-tab="staffing-resourcing">Staffing & Resources</button>
+      <button type="button" data-tab="execution-scheduling">Execution & Scheduling</button>
+      <button type="button" data-tab="project-files">Project Files</button>
+      <button type="button" data-tab="scenarios">Scenarios</button>
+    </nav>
+
     <!-- Business Analytics Tab (Main Interface) -->
     <section id="business-analytics" class="tab-content">
       <h2>Flexible Business Analytics Tool</h2>
@@ -72,47 +83,7 @@
               <div class="chart-container"><canvas id="costPieChart" height="180"></canvas></div>
             </div>
           </div>
-          <div class="collapsible-section">
-            <button type="button" class="collapsible-toggle" aria-expanded="true" aria-controls="monthlyBreakdownSection">
-              Monthly Breakdown
-            </button>
-            <div class="collapsible-content" id="monthlyBreakdownSection">
-              <table class="breakdown-table" id="monthlyBreakdown">
-                <thead>
-                  <tr>
-                    <th>Month</th>
-                    <th>Revenue</th>
-                    <th>Costs</th>
-                    <th>Profit</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <!-- JS fills rows here -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <div class="collapsible-section">
-            <button type="button" class="collapsible-toggle" aria-expanded="true" aria-controls="cashFlowSection">
-              Cash Flow Analysis
-            </button>
-            <div class="collapsible-content" id="cashFlowSection">
-              <table class="breakdown-table" id="cashFlowTable">
-                <thead>
-                  <tr>
-                    <th>Month</th>
-                    <th>Opening</th>
-                    <th>Inflow</th>
-                    <th>Outflow</th>
-                    <th>Closing</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <!-- JS fills rows here -->
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <div id="pnl-collapsible-sections"></div>
         </div>
         
         <!-- ROI Sub-section -->
@@ -135,43 +106,11 @@
           <div id="yearsToROIText" class="summary"></div>
           <div id="roiKPIs" class="summary"></div>
           
-          <div class="collapsible-section">
-            <button type="button" class="collapsible-toggle" aria-expanded="true" aria-controls="paybackSection">
-              Payback Analysis
-            </button>
-            <div class="collapsible-content" id="paybackSection">
-              <table class="breakdown-table" id="paybackTable">
-                <thead>
-                  <tr>
-                    <th>Year</th>
-                    <th>Cumulative Profit</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <!-- JS fills rows here -->
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <div id="roi-collapsible-sections"></div>
           
-          <div class="section-group">
-            <h3>ROI Visualizations</h3>
-            <div class="charts-grid">
-              <div class="chart-container"><canvas id="roiLineChart" height="180"></canvas></div>
-              <div class="chart-container"><canvas id="roiBarChart" height="180"></canvas></div>
-              <div class="chart-container"><canvas id="roiPieChart" height="180"></canvas></div>
-              <div class="chart-container"><canvas id="roiBreakEvenChart" height="180"></canvas></div>
-            </div>
-          </div>
+          <div id="roi-charts-section"></div>
           
-          <div class="collapsible-section">
-            <button type="button" class="collapsible-toggle" aria-expanded="true" aria-controls="sensitivitySection">
-              Sensitivity Analysis (Tornado Chart)
-            </button>
-            <div class="collapsible-content" id="sensitivitySection">
-              <div class="chart-container"><canvas id="tornadoChart" height="220"></canvas></div>
-            </div>
-          </div>
+          <div id="roi-sensitivity-section"></div>
         </div>
         
         <!-- CapEx Sub-section -->

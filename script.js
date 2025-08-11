@@ -799,6 +799,12 @@ function highlightToday() {
 
 // --- Initialization ---
 window.onload = function () {
+  // Initialize templates
+  initializeTemplates();
+  
+  // Initialize sub-tab navigation
+  initializeSubTabNavigation();
+  
   // Initialize the generic P&L system
   initializeGenericPLSystem();
   
@@ -1552,3 +1558,106 @@ window.resetROITab = function() {
     alert('ROI tab has been reset successfully');
   }
 };
+
+// --- Template Initialization ---
+function initializeTemplates() {
+  // Initialize P&L collapsible sections
+  const pnlSectionsContainer = document.getElementById('pnl-collapsible-sections');
+  if (pnlSectionsContainer) {
+    const monthlyBreakdownTable = createCollapsibleTable(
+      'Monthly Breakdown', 
+      'monthlyBreakdownSection', 
+      'monthlyBreakdown', 
+      ['Month', 'Revenue', 'Costs', 'Profit']
+    );
+    
+    const cashFlowTable = createCollapsibleTable(
+      'Cash Flow Analysis', 
+      'cashFlowSection', 
+      'cashFlowTable', 
+      ['Month', 'Opening', 'Inflow', 'Outflow', 'Closing']
+    );
+    
+    pnlSectionsContainer.innerHTML = monthlyBreakdownTable + cashFlowTable;
+  }
+  
+  // Initialize ROI collapsible sections
+  const roiSectionsContainer = document.getElementById('roi-collapsible-sections');
+  if (roiSectionsContainer) {
+    const paybackTable = createCollapsibleTable(
+      'Payback Analysis',
+      'paybackSection',
+      'paybackTable',
+      ['Year', 'Cumulative Profit']
+    );
+    
+    roiSectionsContainer.innerHTML = paybackTable;
+  }
+  
+  // Initialize ROI charts section
+  const roiChartsContainer = document.getElementById('roi-charts-section');
+  if (roiChartsContainer) {
+    const charts = [
+      {chartId: 'roiLineChart', height: '180'},
+      {chartId: 'roiBarChart', height: '180'},
+      {chartId: 'roiPieChart', height: '180'},
+      {chartId: 'roiBreakEvenChart', height: '180'}
+    ];
+    
+    const chartsSection = createSectionGroup('ROI Visualizations', createChartsGrid(charts));
+    roiChartsContainer.innerHTML = chartsSection;
+  }
+  
+  // Initialize ROI sensitivity section
+  const roiSensitivityContainer = document.getElementById('roi-sensitivity-section');
+  if (roiSensitivityContainer) {
+    const sensitivityChart = createCollapsibleChart(
+      'Sensitivity Analysis (Tornado Chart)',
+      'sensitivitySection',
+      'tornadoChart',
+      '220'
+    );
+    
+    roiSensitivityContainer.innerHTML = sensitivityChart;
+  }
+  
+  // Re-initialize collapsible toggles for the new elements
+  initializeCollapsibleToggles();
+}
+
+// --- Initialize Sub-Tab Navigation ---
+function initializeSubTabNavigation() {
+  document.querySelectorAll('.sub-tab').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const subTabId = this.getAttribute('data-subtab');
+      if (subTabId) {
+        showSubTab(subTabId);
+      }
+    });
+  });
+}
+
+// --- Initialize Collapsible Toggles ---
+function initializeCollapsibleToggles() {
+  // Add event listeners for collapsible sections  
+  document.querySelectorAll('.collapsible-toggle').forEach(btn => {
+    // Remove existing listeners to avoid duplicates
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    
+    newBtn.addEventListener('click', function() {
+      const expanded = this.getAttribute('aria-expanded') === 'true';
+      this.setAttribute('aria-expanded', String(!expanded));
+      const content = document.getElementById(this.getAttribute('aria-controls'));
+      if (content) {
+        if (expanded) {
+          content.classList.add('collapsed');
+          this.textContent = '► ' + this.textContent.replace(/^▼|^►/, '').trim();
+        } else {
+          content.classList.remove('collapsed');
+          this.textContent = '▼ ' + this.textContent.replace(/^▼|^►/, '').trim();
+        }
+      }
+    });
+  });
+}
