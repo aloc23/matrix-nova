@@ -1033,36 +1033,259 @@ function initializeSubTabs() {
 // New functions for consolidated tabs
 function resetInvestmentModel() {
   if (confirm('This will reset all investment model data and adjustments. Are you sure?')) {
-    // Reset adjustment sliders
-    document.getElementById('roiRevAdjust').value = 100;
-    document.getElementById('roiCostAdjust').value = 100;
-    document.getElementById('roiRevAdjustLabel').textContent = '100%';
-    document.getElementById('roiCostAdjustLabel').textContent = '100%';
-    
-    // Clear summaries
-    const pnlSummary = document.getElementById('pnlSummary');
-    if (pnlSummary) {
-      pnlSummary.innerHTML = '<p><em>Select a business type and project to view analysis</em></p>';
+    try {
+      // 1. Clear calculated data from memory
+      window.padelData = null;
+      window.gymData = null;
+      
+      // 2. Reset all form inputs to default values
+      resetBusinessFormInputs();
+      
+      // 3. Reset adjustment sliders
+      const roiRevAdjust = document.getElementById('roiRevAdjust');
+      const roiCostAdjust = document.getElementById('roiCostAdjust');
+      const roiRevAdjustLabel = document.getElementById('roiRevAdjustLabel');
+      const roiCostAdjustLabel = document.getElementById('roiCostAdjustLabel');
+      
+      if (roiRevAdjust) roiRevAdjust.value = 100;
+      if (roiCostAdjust) roiCostAdjust.value = 100;
+      if (roiRevAdjustLabel) roiRevAdjustLabel.textContent = '100%';
+      if (roiCostAdjustLabel) roiCostAdjustLabel.textContent = '100%';
+      
+      // 4. Clear all summaries and display areas
+      clearInvestmentDisplays();
+      
+      // 5. Clear all tables
+      clearInvestmentTables();
+      
+      // 6. Destroy and reset charts
+      resetInvestmentCharts();
+      
+      // 7. Clear localStorage business data
+      clearBusinessDataFromStorage();
+      
+      // 8. Reset state management and UI
+      if (window.selectionStateManager) {
+        window.selectionStateManager.resetState();
+      }
+      
+      // 9. Reset dynamic UI
+      if (window.dynamicUI) {
+        window.dynamicUI.resetSelection();
+      }
+      
+      // 10. Update all calculations to reflect the reset
+      updatePnL();
+      updateROI();
+      updateCapExSummary();
+      
+      alert('Investment model has been reset successfully');
+    } catch (error) {
+      console.error('Error during reset:', error);
+      alert('Reset completed with some warnings. Please refresh the page if you encounter any issues.');
     }
-    
-    const yearsToROI = document.getElementById('yearsToROIText');
-    if (yearsToROI) {
-      yearsToROI.innerHTML = '<div class="roi-summary">Select a business type and project to view ROI analysis</div>';
+  }
+}
+
+// Helper function to reset all business form inputs to defaults
+function resetBusinessFormInputs() {
+  // Reset Padel inputs to default values
+  const padelDefaults = {
+    'padelGround': 50000,
+    'padelStructure': 120000,
+    'padelCourts': 3,
+    'padelCourtCost': 18000,
+    'padelAmenities': 20000,
+    'padelPeakHours': 4,
+    'padelPeakUtil': 70,
+    'padelPeakRate': 40,
+    'padelOffHours': 2,
+    'padelOffUtil': 35,
+    'padelOffRate': 25,
+    'padelDays': 7,
+    'padelWeeks': 52,
+    'padelUtil': 5000,
+    'padelInsure': 2500,
+    'padelMaint': 3000,
+    'padelMarket': 4000,
+    'padelAdmin': 3500,
+    'padelClean': 2000,
+    'padelMisc': 1000,
+    'padelFtMgr': 1,
+    'padelFtMgrSal': 35000,
+    'padelFtRec': 1,
+    'padelFtRecSal': 21000,
+    'padelFtCoach': 1,
+    'padelFtCoachSal': 25000,
+    'padelPtCoach': 1,
+    'padelPtCoachSal': 12000,
+    'padelAddStaff': 0,
+    'padelAddStaffSal': 0
+  };
+  
+  // Reset Gym inputs to default values
+  const gymDefaults = {
+    'gymEquip': 35000,
+    'gymFloor': 8000,
+    'gymAmen': 6000,
+    'gymWeekMembers': 60,
+    'gymWeekFee': 20,
+    'gymMonthMembers': 30,
+    'gymMonthFee': 50,
+    'gymAnnualMembers': 12,
+    'gymAnnualFee': 450,
+    'gymUtil': 2500,
+    'gymInsure': 1700,
+    'gymMaint': 2000,
+    'gymMarket': 2500,
+    'gymAdmin': 2100,
+    'gymClean': 1200,
+    'gymMisc': 800,
+    'gymFtTrainer': 1,
+    'gymFtTrainerSal': 22000,
+    'gymPtTrainer': 1,
+    'gymPtTrainerSal': 9000,
+    'gymAddStaff': 0,
+    'gymAddStaffSal': 0
+  };
+  
+  // Apply default values
+  Object.entries(padelDefaults).forEach(([id, value]) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.value = value;
+      // Also update corresponding labels for range inputs
+      const label = document.getElementById(id.replace('padel', '') + 'Val');
+      if (label) label.value = value;
     }
+  });
+  
+  Object.entries(gymDefaults).forEach(([id, value]) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.value = value;
+    }
+  });
+  
+  // Reset checkboxes
+  const gymRamp = document.getElementById('gymRamp');
+  if (gymRamp) gymRamp.checked = false;
+}
+
+// Helper function to clear all investment displays
+function clearInvestmentDisplays() {
+  // Clear main summaries
+  const elementsToReset = [
+    { id: 'pnlSummary', content: '<p><em>Select a business type and project to view analysis</em></p>' },
+    { id: 'yearsToROIText', content: '<div class="roi-summary">Select a business type and project to view ROI analysis</div>' },
+    { id: 'roiKPIs', content: '' },
+    { id: 'capexSummary', content: '<p><em>Select projects to view capital expenditure analysis</em></p>' },
+    { id: 'reportContent', content: '' },
+    { id: 'padelSummary', content: '' },
+    { id: 'gymSummary', content: '' },
+    { id: 'staffingSummary', content: '' }
+  ];
+  
+  elementsToReset.forEach(({ id, content }) => {
+    const element = document.getElementById(id);
+    if (element) element.innerHTML = content;
+  });
+}
+
+// Helper function to clear all investment tables
+function clearInvestmentTables() {
+  const tableIds = [
+    'monthlyBreakdown',
+    'cashFlowTable', 
+    'paybackTable',
+    'capexBreakdownTable',
+    'roiSensitivityTable',
+    'tornadoTable'
+  ];
+  
+  tableIds.forEach(tableId => {
+    const tbody = document.querySelector(`#${tableId} tbody`);
+    if (tbody) tbody.innerHTML = '';
     
-    // Clear tables
-    ['monthlyBreakdown', 'cashFlowTable', 'paybackTable', 'capexBreakdownTable'].forEach(tableId => {
-      const tbody = document.querySelector(`#${tableId} tbody`);
-      if (tbody) tbody.innerHTML = '';
+    // Also clear the entire table if it exists
+    const table = document.getElementById(tableId);
+    if (table && !tbody) table.innerHTML = '';
+  });
+}
+
+// Helper function to reset all investment charts
+function resetInvestmentCharts() {
+  try {
+    const chartIds = [
+      'pnlChart',
+      'profitTrendChart', 
+      'costPieChart',
+      'roiLineChart',
+      'roiBarChart',
+      'roiPieChart',
+      'roiBreakEvenChart',
+      'tornadoChart',
+      'paybackProgressChart'
+    ];
+    
+    chartIds.forEach(chartId => {
+      try {
+        // Destroy existing chart instance if it exists and Chart is available
+        const canvas = document.getElementById(chartId);
+        if (canvas && typeof Chart !== 'undefined') {
+          const existingChart = Chart.getChart(canvas);
+          if (existingChart) {
+            existingChart.destroy();
+          }
+          // Clear the canvas
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+          }
+        }
+      } catch (error) {
+        console.warn(`Failed to reset chart ${chartId}:`, error);
+      }
     });
     
-    // Reset dynamic UI if needed
-    if (window.dynamicUI) {
-      window.dynamicUI.resetSelection();
+    // Reset global chart variables if they exist
+    if (typeof window !== 'undefined') {
+      const chartVars = ['pnlChart', 'profitTrendChart', 'costPieChart', 'roiLineChart', 'roiBarChart', 'roiPieChart', 'roiBreakEvenChart', 'tornadoChart'];
+      chartVars.forEach(varName => {
+        try {
+          if (window[varName] && typeof window[varName].destroy === 'function') {
+            window[varName].destroy();
+          }
+          window[varName] = null;
+        } catch (error) {
+          console.warn(`Failed to reset chart variable ${varName}:`, error);
+        }
+      });
     }
-    
-    alert('Investment model has been reset successfully');
+  } catch (error) {
+    console.warn('Error resetting charts:', error);
   }
+}
+
+// Helper function to clear business data from localStorage
+function clearBusinessDataFromStorage() {
+  const businessDataKeys = [
+    'matrixNova_selectionState',
+    'scenarios',
+    'customProjectTypes',
+    'projectMilestones',
+    'ganttTasks',
+    'dynamicFormData',
+    'businessAnalyticsState'
+  ];
+  
+  businessDataKeys.forEach(key => {
+    try {
+      localStorage.removeItem(key);
+    } catch (error) {
+      console.warn(`Failed to remove ${key} from localStorage:`, error);
+    }
+  });
 }
 
 function exportInvestmentSummary() {

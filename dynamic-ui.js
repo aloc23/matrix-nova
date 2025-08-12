@@ -610,34 +610,53 @@ class DynamicUIGenerator {
 
   // Reset selection to start over
   resetSelection() {
+    // Clear local form data
+    this.formData.clear();
+    
     // Use centralized state manager to reset all selections
     if (window.selectionStateManager) {
       window.selectionStateManager.resetState();
-    } else {
-      // Fallback to local reset
-      this.currentStep = 'business-type';
-      
-      // Hide secondary sections
-      this.hideProjectTypeSelector();
-      this.hideAnalysisForm();
-      
-      // Reset business type selection visuals
-      document.querySelectorAll('.business-type-card').forEach(card => {
-        card.classList.remove('selected');
-      });
-      
-      // Reset dropdown
-      const trigger = document.getElementById('business-type-trigger');
-      const placeholder = trigger?.querySelector('.dropdown-placeholder');
-      if (placeholder) {
-        placeholder.innerHTML = 'Select your business type...';
-        placeholder.classList.remove('has-selection');
-      }
-      
-      // Hide business type info
-      const infoContainer = document.getElementById('selected-business-type-info');
-      if (infoContainer) {
-        infoContainer.style.display = 'none';
+    }
+    
+    // Always perform UI reset regardless of state manager
+    this.currentStep = 'business-type';
+    
+    // Hide secondary sections
+    this.hideProjectTypeSelector();
+    this.hideAnalysisForm();
+    
+    // Reset business type selection visuals
+    document.querySelectorAll('.business-type-card').forEach(card => {
+      card.classList.remove('selected');
+    });
+    
+    // Reset dropdown
+    const trigger = document.getElementById('business-type-trigger');
+    const placeholder = trigger?.querySelector('.dropdown-placeholder');
+    if (placeholder) {
+      placeholder.innerHTML = 'Select your business type...';
+      placeholder.classList.remove('has-selection');
+    }
+    
+    // Hide business type info
+    const infoContainer = document.getElementById('selected-business-type-info');
+    if (infoContainer) {
+      infoContainer.style.display = 'none';
+    }
+    
+    // Clear any analysis forms
+    const analysisContainer = document.getElementById('analysis-container');
+    if (analysisContainer) {
+      analysisContainer.innerHTML = '';
+    }
+    
+    // Reset back to initial state message
+    const container = document.getElementById('business-analytics');
+    if (container) {
+      const stepContainer = container.querySelector('.business-type-selection');
+      if (stepContainer) {
+        // Make sure the business type selector is visible
+        stepContainer.style.display = 'block';
       }
     }
   }
