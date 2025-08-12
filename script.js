@@ -1743,7 +1743,7 @@ function loadProjectFiles() {
     const fileElement = document.createElement('div');
     fileElement.className = 'file-item';
     fileElement.innerHTML = `
-      <div class="file-icon">📄</div>
+      <div class="file-icon"><i data-feather="file-text"></i></div>
       <div class="file-info">
         <div class="file-name">${file.name}</div>
         <div class="file-meta">
@@ -1802,7 +1802,7 @@ function filterFilesByCategory(category) {
     const fileElement = document.createElement('div');
     fileElement.className = 'file-item';
     fileElement.innerHTML = `
-      <div class="file-icon">📄</div>
+      <div class="file-icon"><i data-feather="file-text"></i></div>
       <div class="file-info">
         <div class="file-name">${file.name}</div>
         <div class="file-meta">
@@ -1844,7 +1844,7 @@ function searchFiles() {
     const fileElement = document.createElement('div');
     fileElement.className = 'file-item';
     fileElement.innerHTML = `
-      <div class="file-icon">📄</div>
+      <div class="file-icon"><i data-feather="file-text"></i></div>
       <div class="file-info">
         <div class="file-name">${file.name}</div>
         <div class="file-meta">

@@ -40,7 +40,7 @@ const BUSINESS_TYPE_CATEGORIES = {
     name: 'Booking-based',
     description: 'Businesses that rent out time slots, spaces, or equipment',
     examples: ['Padel courts', 'Tennis courts', 'Coworking rooms', 'Meeting rooms', 'Equipment rental'],
-    icon: '📅',
+    icon: '',
     keyMetrics: ['Utilization Rate', 'Peak vs Off-Peak Revenue', 'Booking Capacity', 'Average Session Price'],
     revenueModel: 'time-based',
     characteristics: ['time_slots', 'capacity_utilization', 'peak_pricing', 'scheduling']
@@ -50,7 +50,7 @@ const BUSINESS_TYPE_CATEGORIES = {
     name: 'Member-based',
     description: 'Subscription or membership-driven businesses',
     examples: ['Gym', 'Club', 'SaaS', 'Subscription services'],
-    icon: '👥',
+    icon: '',
     keyMetrics: ['Member Count', 'Churn Rate', 'Average Revenue Per User', 'Member Lifetime Value'],
     revenueModel: 'subscription',
     characteristics: ['recurring_revenue', 'member_tiers', 'retention', 'growth_rate']
@@ -60,7 +60,7 @@ const BUSINESS_TYPE_CATEGORIES = {
     name: 'Event-based',
     description: 'Businesses that organize and sell tickets to events',
     examples: ['Conferences', 'Workshops', 'Seminars', 'Training sessions'],
-    icon: '🎪',
+    icon: '',
     keyMetrics: ['Ticket Sales', 'Attendance Rate', 'Event Capacity', 'Revenue per Attendee'],
     revenueModel: 'event-tickets',
     characteristics: ['ticket_pricing', 'event_capacity', 'seasonal_events', 'speaker_costs']
@@ -70,7 +70,7 @@ const BUSINESS_TYPE_CATEGORIES = {
     name: 'Product-based',
     description: 'Businesses that sell physical or digital products',
     examples: ['Retail store', 'E-commerce', 'Manufacturing', 'Digital products'],
-    icon: '📦',
+    icon: '',
     keyMetrics: ['Units Sold', 'Average Order Value', 'Inventory Turnover', 'Gross Margin'],
     revenueModel: 'product-sales',
     characteristics: ['inventory_management', 'cost_of_goods', 'order_fulfillment', 'product_mix']
@@ -80,7 +80,7 @@ const BUSINESS_TYPE_CATEGORIES = {
     name: 'Service-based',
     description: 'Businesses that provide professional or personal services',
     examples: ['Consulting', 'Repairs', 'Professional services', 'Personal training'],
-    icon: '🔧',
+    icon: '',
     keyMetrics: ['Billable Hours', 'Hourly Rate', 'Client Retention', 'Project Profitability'],
     revenueModel: 'hourly-project',
     characteristics: ['hourly_billing', 'project_based', 'consultant_utilization', 'client_relationships']
@@ -90,7 +90,7 @@ const BUSINESS_TYPE_CATEGORIES = {
     name: 'Education-based',
     description: 'Educational institutions and training providers',
     examples: ['Courses', 'Training programs', 'Schools', 'Online education'],
-    icon: '🎓',
+    icon: '',
     keyMetrics: ['Student Enrollment', 'Course Completion Rate', 'Revenue per Student', 'Teacher Utilization'],
     revenueModel: 'tuition-fees',
     characteristics: ['course_curriculum', 'student_capacity', 'instructor_costs', 'certification']
@@ -100,7 +100,7 @@ const BUSINESS_TYPE_CATEGORIES = {
     name: 'Rental-based',
     description: 'Businesses that rent out assets or equipment long-term',
     examples: ['Equipment rental', 'Property rental', 'Vehicle rental', 'Asset leasing'],
-    icon: '🏠',
+    icon: '',
     keyMetrics: ['Rental Utilization', 'Average Rental Duration', 'Asset ROI', 'Maintenance Costs'],
     revenueModel: 'rental-income',
     characteristics: ['asset_depreciation', 'maintenance_cycles', 'rental_duration', 'asset_utilization']
@@ -110,7 +110,7 @@ const BUSINESS_TYPE_CATEGORIES = {
     name: 'Hybrid',
     description: 'Businesses that combine multiple revenue models',
     examples: ['Multi-service businesses', 'Complex business models', 'Mixed revenue streams'],
-    icon: '🔀',
+    icon: '',
     keyMetrics: ['Revenue Mix', 'Cross-sell Rate', 'Customer Segment Value', 'Model Efficiency'],
     revenueModel: 'mixed',
     characteristics: ['multiple_revenue_streams', 'cross_selling', 'segment_analysis', 'model_optimization']
@@ -120,7 +120,7 @@ const BUSINESS_TYPE_CATEGORIES = {
     name: 'Real Estate',
     description: 'Real estate investment and property management businesses',
     examples: ['Rental properties', 'Commercial real estate', 'Property management', 'Real estate development'],
-    icon: '🏘️',
+    icon: '',
     keyMetrics: ['Rental Yield', 'Occupancy Rate', 'Property Value Growth', 'Cash-on-Cash Return'],
     revenueModel: 'rental-income',
     characteristics: ['property_management', 'rental_income', 'property_appreciation', 'maintenance_costs', 'tenant_management']
@@ -130,7 +130,7 @@ const BUSINESS_TYPE_CATEGORIES = {
     name: 'CapEx Investment',
     description: 'Capital expenditure investment tracking and management',
     examples: ['Equipment purchases', 'Infrastructure projects', 'Technology upgrades', 'Facility improvements'],
-    icon: '🏗️',
+    icon: '',
     keyMetrics: ['Budget Utilization', 'Project ROI', 'Implementation Timeline', 'Cost Variance'],
     revenueModel: 'cost-savings',
     characteristics: ['budget_tracking', 'project_management', 'asset_depreciation', 'cost_savings', 'implementation_phases']
@@ -140,7 +140,7 @@ const BUSINESS_TYPE_CATEGORIES = {
     name: 'Subscription Income',
     description: 'Subscription-based revenue models with recurring payments',
     examples: ['Software subscriptions', 'Content platforms', 'Service subscriptions', 'Membership programs'],
-    icon: '💳',
+    icon: '',
     keyMetrics: ['Monthly Recurring Revenue', 'Churn Rate', 'Customer Lifetime Value', 'Upgrade Rate'],
     revenueModel: 'subscription',
     characteristics: ['recurring_revenue', 'subscription_tiers', 'retention_management', 'upgrade_optimization']
@@ -150,7 +150,7 @@ const BUSINESS_TYPE_CATEGORIES = {
     name: 'Licensing & Royalties',
     description: 'Intellectual property licensing and royalty-based revenue',
     examples: ['Patent licensing', 'Brand licensing', 'Content royalties', 'Franchise fees'],
-    icon: '📄',
+    icon: '',
     keyMetrics: ['License Revenue', 'Royalty Rate', 'IP Portfolio Value', 'License Utilization'],
     revenueModel: 'royalty-income',
     characteristics: ['ip_management', 'royalty_tracking', 'license_compliance', 'portfolio_optimization']
@@ -160,7 +160,7 @@ const BUSINESS_TYPE_CATEGORIES = {
     name: 'Partnership Revenue',
     description: 'Revenue generated through strategic partnerships and collaborations',
     examples: ['Joint ventures', 'Strategic alliances', 'Revenue sharing', 'Channel partnerships'],
-    icon: '🤝',
+    icon: '',
     keyMetrics: ['Partner Performance', 'Revenue Share', 'Partnership ROI', 'Channel Effectiveness'],
     revenueModel: 'partnership-share',
     characteristics: ['partner_management', 'revenue_sharing', 'channel_optimization', 'collaboration_tracking']
@@ -170,7 +170,7 @@ const BUSINESS_TYPE_CATEGORIES = {
     name: 'Investment Returns',
     description: 'Investment portfolio management and returns tracking',
     examples: ['Portfolio investments', 'Asset management', 'Fund management', 'Financial instruments'],
-    icon: '📈',
+    icon: '',
     keyMetrics: ['Return on Investment', 'Portfolio Yield', 'Risk-Adjusted Returns', 'Asset Allocation'],
     revenueModel: 'investment-income',
     characteristics: ['portfolio_management', 'risk_assessment', 'return_optimization', 'asset_allocation']
@@ -180,7 +180,7 @@ const BUSINESS_TYPE_CATEGORIES = {
     name: 'Operational Efficiency',
     description: 'Cost management and operational efficiency improvements',
     examples: ['Process optimization', 'Cost reduction', 'Efficiency programs', 'Operational improvements'],
-    icon: '⚙️',
+    icon: '',
     keyMetrics: ['Cost Savings', 'Efficiency Gains', 'Process Improvement', 'Resource Utilization'],
     revenueModel: 'cost-savings',
     characteristics: ['process_optimization', 'cost_management', 'efficiency_tracking', 'resource_optimization']
@@ -190,7 +190,7 @@ const BUSINESS_TYPE_CATEGORIES = {
     name: 'Recurring Revenue',
     description: 'Predictable recurring revenue streams and maintenance contracts',
     examples: ['Maintenance contracts', 'Support services', 'Retainer fees', 'Recurring services'],
-    icon: '🔄',
+    icon: '',
     keyMetrics: ['Monthly Recurring Revenue', 'Contract Renewal Rate', 'Revenue Predictability', 'Service Utilization'],
     revenueModel: 'recurring-income',
     characteristics: ['contract_management', 'renewal_tracking', 'service_delivery', 'revenue_predictability']
@@ -203,7 +203,7 @@ const DEFAULT_PROJECT_TYPES = {
     id: 'padel',
     name: 'Padel Club',
     description: 'Padel court business with rental and coaching services',
-    icon: '🏸',
+    icon: '',
     businessType: 'booking',
     categories: {
       investment: [
@@ -251,7 +251,7 @@ const DEFAULT_PROJECT_TYPES = {
     id: 'gym',
     name: 'Gym/Fitness Center',
     description: 'Fitness facility with membership-based revenue model',
-    icon: '💪',
+    icon: '',
     businessType: 'member',
     categories: {
       investment: [
@@ -295,7 +295,7 @@ const DEFAULT_PROJECT_TYPES = {
     id: 'conference',
     name: 'Conference/Event',
     description: 'Event-based business with ticket sales and venue management',
-    icon: '🎪',
+    icon: '',
     businessType: 'event',
     categories: {
       investment: [
@@ -331,7 +331,7 @@ const DEFAULT_PROJECT_TYPES = {
     id: 'saas',
     name: 'SaaS Platform',
     description: 'Software as a Service with subscription-based revenue',
-    icon: '💻',
+    icon: '',
     businessType: 'member',
     categories: {
       investment: [
@@ -366,7 +366,7 @@ const DEFAULT_PROJECT_TYPES = {
     id: 'ecommerce',
     name: 'E-commerce Store',
     description: 'Online retail business with product sales',
-    icon: '🛒',
+    icon: '',
     businessType: 'product',
     categories: {
       investment: [
@@ -400,7 +400,7 @@ const DEFAULT_PROJECT_TYPES = {
     id: 'consulting',
     name: 'Consulting Services',
     description: 'Professional services with hourly or project-based billing',
-    icon: '💼',
+    icon: '',
     businessType: 'service',
     categories: {
       investment: [
@@ -435,7 +435,7 @@ const DEFAULT_PROJECT_TYPES = {
     id: 'workshop',
     name: 'Training Workshop',
     description: 'Educational workshop with course fees and training materials',
-    icon: '🎓',
+    icon: '',
     businessType: 'education',
     categories: {
       investment: [
@@ -468,7 +468,7 @@ const DEFAULT_PROJECT_TYPES = {
     id: 'carRental',
     name: 'Vehicle Rental',
     description: 'Vehicle rental business with fleet management',
-    icon: '🚗',
+    icon: '',
     businessType: 'rental',
     categories: {
       investment: [
@@ -503,7 +503,7 @@ const DEFAULT_PROJECT_TYPES = {
     id: 'realEstate',
     name: 'Real Estate Investment',
     description: 'Rental property investment with property management features',
-    icon: '🏘️',
+    icon: '',
     businessType: 'real_estate',
     categories: {
       investment: [
@@ -543,7 +543,7 @@ const DEFAULT_PROJECT_TYPES = {
     id: 'capexInvestment',
     name: 'CapEx Investment Project',
     description: 'Capital expenditure tracking with budget management and ROI analysis',
-    icon: '🏗️',
+    icon: '',
     businessType: 'capex_investment',
     categories: {
       investment: [
@@ -584,7 +584,7 @@ const DEFAULT_PROJECT_TYPES = {
     id: 'subscriptionService',
     name: 'Subscription Service',
     description: 'Subscription-based business with recurring monthly/annual revenue',
-    icon: '💳',
+    icon: '',
     businessType: 'subscription_income',
     categories: {
       investment: [
@@ -620,7 +620,7 @@ const DEFAULT_PROJECT_TYPES = {
     id: 'licensingBusiness',
     name: 'Licensing & Royalties',
     description: 'Intellectual property licensing with royalty-based revenue',
-    icon: '📄',
+    icon: '',
     businessType: 'licensing_royalties',
     categories: {
       investment: [
@@ -654,7 +654,7 @@ const DEFAULT_PROJECT_TYPES = {
     id: 'partnershipBusiness',
     name: 'Partnership Revenue',
     description: 'Strategic partnerships and revenue sharing arrangements',
-    icon: '🤝',
+    icon: '',
     businessType: 'partnership_revenue',
     categories: {
       investment: [
@@ -688,7 +688,7 @@ const DEFAULT_PROJECT_TYPES = {
     id: 'investmentPortfolio',
     name: 'Investment Portfolio',
     description: 'Investment portfolio management and returns tracking',
-    icon: '📈',
+    icon: '',
     businessType: 'investment_returns',
     categories: {
       investment: [
@@ -722,7 +722,7 @@ const DEFAULT_PROJECT_TYPES = {
     id: 'operationalOptimization',
     name: 'Operational Optimization',
     description: 'Cost reduction and operational efficiency improvement project',
-    icon: '⚙️',
+    icon: '',
     businessType: 'operational_efficiency',
     categories: {
       investment: [
@@ -755,7 +755,7 @@ const DEFAULT_PROJECT_TYPES = {
     id: 'recurringService',
     name: 'Recurring Services',
     description: 'Maintenance contracts and recurring service agreements',
-    icon: '🔄',
+    icon: '',
     businessType: 'recurring_revenue',
     categories: {
       investment: [
@@ -789,7 +789,7 @@ const DEFAULT_PROJECT_TYPES = {
     id: 'generic',
     name: 'Generic Business',
     description: 'Customizable business model template',
-    icon: '🏢',
+    icon: '',
     businessType: 'hybrid',
     categories: {
       investment: [

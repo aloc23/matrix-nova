@@ -1580,7 +1580,7 @@ class DynamicUIGenerator {
           
           <div class="info-sections">
             <div class="info-section">
-              <h4>📊 Key Performance Indicators</h4>
+              <h4>Key Performance Indicators</h4>
               <ul class="kpi-list">
                 ${businessCategory.keyMetrics ? businessCategory.keyMetrics.map(metric => 
                   `<li><span class="kpi-name">${metric}</span></li>`
@@ -1589,7 +1589,7 @@ class DynamicUIGenerator {
             </div>
             
             <div class="info-section">
-              <h4>💡 Key Features</h4>
+              <h4>Key Features</h4>
               <ul class="feature-list">
                 <li><span class="feature">Revenue Model:</span> ${businessCategory.revenueModel || 'Flexible'}</li>
                 <li><span class="feature">Business Type:</span> ${businessCategory.name}</li>
@@ -1600,7 +1600,7 @@ class DynamicUIGenerator {
             
             ${project.categories ? `
               <div class="info-section">
-                <h4>📋 Available Categories</h4>
+                <h4>Available Categories</h4>
                 <div class="category-tags">
                   ${Object.keys(project.categories).map(category => 
                     `<span class="category-tag">${category.charAt(0).toUpperCase() + category.slice(1)}</span>`
@@ -1643,7 +1643,7 @@ class DynamicUIGenerator {
           
           <div class="info-sections">
             <div class="info-section">
-              <h4>🎯 Benefits</h4>
+              <h4>Benefits</h4>
               <ul class="feature-list">
                 <li><span class="feature">Full Control:</span> Define your own revenue streams and cost categories</li>
                 <li><span class="feature">Flexibility:</span> Add custom fields and calculations specific to your business</li>
@@ -1653,7 +1653,7 @@ class DynamicUIGenerator {
             </div>
             
             <div class="info-section">
-              <h4>📋 What You Can Customize</h4>
+              <h4>What You Can Customize</h4>
               <div class="category-tags">
                 <span class="category-tag">Investment Categories</span>
                 <span class="category-tag">Revenue Streams</span>
@@ -1665,7 +1665,7 @@ class DynamicUIGenerator {
             </div>
             
             <div class="info-section">
-              <h4>🚀 Getting Started</h4>
+              <h4>Getting Started</h4>
               <ol class="steps-list">
                 <li>Choose your base business type for initial structure</li>
                 <li>Customize categories and fields to match your business</li>
