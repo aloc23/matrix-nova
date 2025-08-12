@@ -411,19 +411,76 @@ class DynamicUIGenerator {
         <h4>Available Templates</h4>
         <div class="project-template-grid">
           ${projectTypes.map(type => `
-            <div class="project-template-card ${this.selectedProjectTypes.includes(type.id) ? 'selected' : ''}" 
+            <div class="project-template-card enhanced ${this.selectedProjectTypes.includes(type.id) ? 'selected' : ''}" 
                  data-project-type="${type.id}"
-                 onclick="dynamicUI.selectProjectType('${type.id}')">
-              <div class="project-icon">${type.icon}</div>
-              <h5>${type.name}</h5>
-              <p>${type.description}</p>
+                 onclick="dynamicUI.selectProjectType('${type.id}')"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();dynamicUI.selectProjectType('${type.id}');}"
+                 tabindex="0"
+                 role="button"
+                 aria-label="Select ${type.name} template">
+              <div class="card-header">
+                <div class="project-icon enhanced">${type.icon}</div>
+                <div class="card-accent"></div>
+              </div>
+              <div class="card-content">
+                <h5>${type.name}</h5>
+                <p class="card-description">${type.description}</p>
+                <div class="card-metrics">
+                  <div class="metric-tag">
+                    <span class="metric-label">Business Type:</span>
+                    <span class="metric-value">${businessCategory.name}</span>
+                  </div>
+                  ${businessCategory.keyMetrics && businessCategory.keyMetrics.length > 0 ? `
+                    <div class="metric-tag">
+                      <span class="metric-label">Key Metrics:</span>
+                      <span class="metric-value">${businessCategory.keyMetrics.slice(0, 2).join(', ')}</span>
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+              <div class="card-actions">
+                <button type="button" class="learn-more-btn" 
+                        onclick="event.stopPropagation();dynamicUI.showProjectInfo('${type.id}')"
+                        aria-label="Learn more about ${type.name}">
+                  <span class="icon">ℹ️</span>
+                  Learn More
+                </button>
+              </div>
             </div>
           `).join('')}
           
-          <div class="project-template-card create-custom" onclick="dynamicUI.createCustomTemplate()">
-            <div class="project-icon">➕</div>
-            <h5>Create Custom</h5>
-            <p>Create a custom template for your specific business</p>
+          <div class="project-template-card enhanced create-custom" 
+               onclick="dynamicUI.createCustomTemplate()"
+               onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();dynamicUI.createCustomTemplate();}"
+               tabindex="0"
+               role="button"
+               aria-label="Create custom template">
+            <div class="card-header">
+              <div class="project-icon enhanced">➕</div>
+              <div class="card-accent custom"></div>
+            </div>
+            <div class="card-content">
+              <h5>Create Custom</h5>
+              <p class="card-description">Create a custom template for your specific business</p>
+              <div class="card-metrics">
+                <div class="metric-tag">
+                  <span class="metric-label">Flexibility:</span>
+                  <span class="metric-value">Unlimited</span>
+                </div>
+                <div class="metric-tag">
+                  <span class="metric-label">Customization:</span>
+                  <span class="metric-value">Full Control</span>
+                </div>
+              </div>
+            </div>
+            <div class="card-actions">
+              <button type="button" class="learn-more-btn" 
+                      onclick="event.stopPropagation();dynamicUI.showCustomTemplateInfo()"
+                      aria-label="Learn more about custom templates">
+                <span class="icon">ℹ️</span>
+                Learn More
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1474,6 +1531,186 @@ class DynamicUIGenerator {
     };
     
     input.click();
+  }
+
+  // Show project information in a modal/popover
+  showProjectInfo(projectId) {
+    const projectTypes = window.projectTypeManager?.getProjectsByBusinessType(this.selectedBusinessType) || [];
+    const project = projectTypes.find(p => p.id === projectId);
+    
+    if (!project) {
+      console.warn('Project not found:', projectId);
+      return;
+    }
+
+    const businessCategory = window.BUSINESS_TYPE_CATEGORIES[this.selectedBusinessType];
+    
+    // Create modal content
+    const modalContent = `
+      <div class="project-info-modal">
+        <div class="modal-header">
+          <h3>
+            <span class="modal-icon">${project.icon}</span>
+            ${project.name}
+          </h3>
+          <button type="button" class="modal-close" onclick="this.closest('.project-info-modal').remove()" 
+                  aria-label="Close">✕</button>
+        </div>
+        <div class="modal-body">
+          <p class="project-description">${project.description}</p>
+          
+          <div class="info-sections">
+            <div class="info-section">
+              <h4>📊 Key Performance Indicators</h4>
+              <ul class="kpi-list">
+                ${businessCategory.keyMetrics ? businessCategory.keyMetrics.map(metric => 
+                  `<li><span class="kpi-name">${metric}</span></li>`
+                ).join('') : '<li>Custom metrics available</li>'}
+              </ul>
+            </div>
+            
+            <div class="info-section">
+              <h4>💡 Key Features</h4>
+              <ul class="feature-list">
+                <li><span class="feature">Revenue Model:</span> ${businessCategory.revenueModel || 'Flexible'}</li>
+                <li><span class="feature">Business Type:</span> ${businessCategory.name}</li>
+                <li><span class="feature">Industry:</span> ${businessCategory.examples ? businessCategory.examples.slice(0, 3).join(', ') : 'Various'}</li>
+                <li><span class="feature">Complexity:</span> ${project.categories ? 'Comprehensive' : 'Basic'}</li>
+              </ul>
+            </div>
+            
+            ${project.categories ? `
+              <div class="info-section">
+                <h4>📋 Available Categories</h4>
+                <div class="category-tags">
+                  ${Object.keys(project.categories).map(category => 
+                    `<span class="category-tag">${category.charAt(0).toUpperCase() + category.slice(1)}</span>`
+                  ).join('')}
+                </div>
+              </div>
+            ` : ''}
+          </div>
+          
+          <div class="modal-actions">
+            <button type="button" class="btn-primary" onclick="dynamicUI.selectProjectType('${projectId}'); this.closest('.project-info-modal').remove();">
+              Select This Template
+            </button>
+            <button type="button" class="btn-secondary" onclick="this.closest('.project-info-modal').remove();">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Show modal
+    this.showModal(modalContent);
+  }
+
+  // Show custom template information
+  showCustomTemplateInfo() {
+    const modalContent = `
+      <div class="project-info-modal">
+        <div class="modal-header">
+          <h3>
+            <span class="modal-icon">➕</span>
+            Create Custom Template
+          </h3>
+          <button type="button" class="modal-close" onclick="this.closest('.project-info-modal').remove()" 
+                  aria-label="Close">✕</button>
+        </div>
+        <div class="modal-body">
+          <p class="project-description">Build a completely customized business template tailored to your unique requirements.</p>
+          
+          <div class="info-sections">
+            <div class="info-section">
+              <h4>🎯 Benefits</h4>
+              <ul class="feature-list">
+                <li><span class="feature">Full Control:</span> Define your own revenue streams and cost categories</li>
+                <li><span class="feature">Flexibility:</span> Add custom fields and calculations specific to your business</li>
+                <li><span class="feature">Scalability:</span> Easily modify and expand as your business grows</li>
+                <li><span class="feature">Accuracy:</span> Model your exact business scenarios</li>
+              </ul>
+            </div>
+            
+            <div class="info-section">
+              <h4>📋 What You Can Customize</h4>
+              <div class="category-tags">
+                <span class="category-tag">Investment Categories</span>
+                <span class="category-tag">Revenue Streams</span>
+                <span class="category-tag">Operating Costs</span>
+                <span class="category-tag">Staffing Structure</span>
+                <span class="category-tag">KPIs & Metrics</span>
+                <span class="category-tag">Calculations</span>
+              </div>
+            </div>
+            
+            <div class="info-section">
+              <h4>🚀 Getting Started</h4>
+              <ol class="steps-list">
+                <li>Choose your base business type for initial structure</li>
+                <li>Customize categories and fields to match your business</li>
+                <li>Define your specific KPIs and calculations</li>
+                <li>Test and refine your template</li>
+              </ol>
+            </div>
+          </div>
+          
+          <div class="modal-actions">
+            <button type="button" class="btn-primary" onclick="dynamicUI.createCustomTemplate(); this.closest('.project-info-modal').remove();">
+              Start Creating
+            </button>
+            <button type="button" class="btn-secondary" onclick="this.closest('.project-info-modal').remove();">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Show modal
+    this.showModal(modalContent);
+  }
+
+  // Helper method to show modal
+  showModal(content) {
+    // Remove any existing modal
+    const existingModal = document.querySelector('.modal-backdrop');
+    if (existingModal) {
+      existingModal.remove();
+    }
+    
+    // Create modal backdrop
+    const backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop';
+    backdrop.innerHTML = content;
+    
+    // Add to page
+    document.body.appendChild(backdrop);
+    
+    // Focus trap and accessibility
+    backdrop.addEventListener('click', (e) => {
+      if (e.target === backdrop) {
+        backdrop.remove();
+      }
+    });
+    
+    // ESC key to close
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        backdrop.remove();
+        document.removeEventListener('keydown', handleEscape);
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    
+    // Focus first button
+    setTimeout(() => {
+      const firstButton = backdrop.querySelector('button');
+      if (firstButton) {
+        firstButton.focus();
+      }
+    }, 100);
   }
 }
 
