@@ -75,7 +75,7 @@ class ProjectSelectorManager {
   updateSelectorsFromState() {
     if (!window.selectionStateManager || !this.isInitialized) return;
     
-    const businessType = window.selectionStateManager.getSelectedBusinessType();
+    const businessType = window.selectionStateManager.getBusinessType();
     if (!businessType) {
       // No business type selected, clear selectors
       if (this.investmentSelector) {
@@ -104,12 +104,11 @@ class ProjectSelectorManager {
   }
   
   getAvailableProjectsForBusinessType(businessType) {
-    if (!window.ProjectTypeConfig) return [];
+    if (!window.projectTypeManager) return [];
     
     try {
       // Get projects by business type from config
-      const projectsByBusinessType = window.ProjectTypeConfig.getProjectsByBusinessType();
-      const projectsForType = projectsByBusinessType[businessType] || [];
+      const projectsForType = window.projectTypeManager.getProjectsByBusinessType(businessType) || [];
       
       return projectsForType.map(project => ({
         id: project.id,
