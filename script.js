@@ -290,33 +290,40 @@ function updatePnL() {
     }
   });
   
-  // Fallback to legacy calculations if no centralized state
+  // Show blank data when no projects are selected (removed fallback to legacy calculations)
   if (selectedProjects.length === 0) {
-    const padel = window.padelData || { revenue: 0, costs: 0, profit: 0, monthlyRevenue: 0, monthlyCosts: 0, monthlyProfit: 0 };
-    const gym = gymIncluded() && window.gymData ? window.gymData : { revenue: 0, costs: 0, profit: 0, monthlyRevenue: 0, monthlyCosts: 0, monthlyProfit: 0 };
-    
-    totalRevenue = padel.revenue + gym.revenue;
-    totalCosts = padel.costs + gym.costs;
-    totalProfit = padel.profit + gym.profit;
-    monthlyRevenue = padel.monthlyRevenue + gym.monthlyRevenue;
-    monthlyCosts = padel.monthlyCosts + gym.monthlyCosts;
-    monthlyProfit = padel.monthlyProfit + gym.monthlyProfit;
-    
-    if (padel.revenue > 0) projectData.push({ name: 'Padel', revenue: padel.revenue, costs: padel.costs, profit: padel.profit });
-    if (gym.revenue > 0) projectData.push({ name: 'Gym', revenue: gym.revenue, costs: gym.costs, profit: gym.profit });
+    // Show blank state when no projects are selected
+    totalRevenue = 0;
+    totalCosts = 0;
+    totalProfit = 0;
+    monthlyRevenue = 0;
+    monthlyCosts = 0;
+    monthlyProfit = 0;
   }
   
   const summaryDiv = document.getElementById('pnlSummary');
-  const projectsList = projectData.length > 0 ? 
-    projectData.map(p => p.name).join(', ') : 
-    'No projects selected';
-    
-  summaryDiv.innerHTML = `
-    <p><strong>Selected Projects:</strong> ${projectsList}</p>
-    <p><b>Total Revenue:</b> €${Math.round(totalRevenue).toLocaleString('en-US')}</p>
-    <p><b>Total Costs:</b> €${Math.round(totalCosts).toLocaleString('en-US')}</p>
-    <p><b>Net Profit:</b> €${Math.round(totalProfit).toLocaleString('en-US')}</p>
-  `;
+  if (selectedProjects.length === 0) {
+    // Show empty state message when no projects are selected
+    const projectsList = 'No projects selected';
+    summaryDiv.innerHTML = `
+      <p><strong>Selected Projects:</strong> ${projectsList}</p>
+      <p><em>Choose projects from the dropdown above to see financial analysis.</em></p>
+      <p><b>Total Revenue:</b> €0</p>
+      <p><b>Total Costs:</b> €0</p>
+      <p><b>Net Profit:</b> €0</p>
+    `;
+  } else {
+    const projectsList = projectData.length > 0 ? 
+      projectData.map(p => p.name).join(', ') : 
+      'No projects selected';
+      
+    summaryDiv.innerHTML = `
+      <p><strong>Selected Projects:</strong> ${projectsList}</p>
+      <p><b>Total Revenue:</b> €${Math.round(totalRevenue).toLocaleString('en-US')}</p>
+      <p><b>Total Costs:</b> €${Math.round(totalCosts).toLocaleString('en-US')}</p>
+      <p><b>Net Profit:</b> €${Math.round(totalProfit).toLocaleString('en-US')}</p>
+    `;
+  }
   
   // Monthly breakdown
   const tbody = document.querySelector('#monthlyBreakdown tbody');
@@ -342,66 +349,79 @@ function updatePnL() {
     opening = closing;
   }
   
-  // Charts
-  if (pnlChart) pnlChart.destroy();
-  if (profitTrendChart) profitTrendChart.destroy();
-  if (costPieChart) costPieChart.destroy();
-  
-  // PnL Chart
-  const ctxPnl = document.getElementById('pnlChart').getContext('2d');
-  pnlChart = new Chart(ctxPnl, {
-    type: 'bar',
-    data: {
-      labels: ['Revenue', 'Costs', 'Profit'],
-      datasets: [{
-        label: 'Annual Amount (€)',
-        data: [totalRevenue, totalCosts, totalProfit],
-        backgroundColor: ['#4caf50', '#f44336', '#2196f3']
-      }]
-    },
-    options: { responsive: true, maintainAspectRatio: false }
-  });
-  
-  // Profit Trend Chart
-  const ctxProfitTrend = document.getElementById('profitTrendChart').getContext('2d');
-  const monthlyProfits = new Array(12).fill(totalProfit / 12);
-  profitTrendChart = new Chart(ctxProfitTrend, {
-    type: 'line',
-    data: {
-      labels: [...Array(12).keys()].map(m => `Month ${m + 1}`),
-      datasets: [{
-        label: 'Profit',
-        data: monthlyProfits,
-        fill: true,
-        backgroundColor: 'rgba(33,150,243,0.2)',
-        borderColor: 'rgba(33,150,243,1)',
-        borderWidth: 2,
-        tension: 0.3
-      }]
-    },
-    options: { responsive: true, maintainAspectRatio: false }
-  });
-  
-  // Cost Pie Chart - show breakdown by project
-  const ctxCostPie = document.getElementById('costPieChart').getContext('2d');
-  const costLabels = projectData.length > 0 ? 
-    projectData.map(p => `${p.name} Costs`) : 
-    ['Padel Costs', 'Gym Costs'];
-  const costData = projectData.length > 0 ? 
-    projectData.map(p => p.costs) : 
-    [window.padelData?.costs || 0, gymIncluded() ? (window.gymData?.costs || 0) : 0];
+  // Charts - Only create if Chart.js is available
+  if (typeof Chart !== 'undefined') {
+    if (pnlChart) pnlChart.destroy();
+    if (profitTrendChart) profitTrendChart.destroy();
+    if (costPieChart) costPieChart.destroy();
     
-  costPieChart = new Chart(ctxCostPie, {
-    type: 'pie',
-    data: {
-      labels: costLabels,
-      datasets: [{
-        data: costData,
-        backgroundColor: ['#f39c12', '#3498db', '#e74c3c', '#2ecc71', '#9b59b6']
-      }]
-    },
-    options: { responsive: true, maintainAspectRatio: false }
-  });
+    // PnL Chart
+    const pnlCanvasEl = document.getElementById('pnlChart');
+    if (pnlCanvasEl) {
+      const ctxPnl = pnlCanvasEl.getContext('2d');
+      pnlChart = new Chart(ctxPnl, {
+        type: 'bar',
+        data: {
+          labels: ['Revenue', 'Costs', 'Profit'],
+          datasets: [{
+            label: 'Annual Amount (€)',
+            data: [totalRevenue, totalCosts, totalProfit],
+            backgroundColor: ['#4caf50', '#f44336', '#2196f3']
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+    }
+    
+    // Profit Trend Chart
+    const profitTrendCanvasEl = document.getElementById('profitTrendChart');
+    if (profitTrendCanvasEl) {
+      const ctxProfitTrend = profitTrendCanvasEl.getContext('2d');
+      const monthlyProfits = new Array(12).fill(totalProfit / 12);
+      profitTrendChart = new Chart(ctxProfitTrend, {
+        type: 'line',
+        data: {
+          labels: [...Array(12).keys()].map(m => `Month ${m + 1}`),
+          datasets: [{
+            label: 'Profit',
+            data: monthlyProfits,
+            fill: true,
+            backgroundColor: 'rgba(33,150,243,0.2)',
+            borderColor: 'rgba(33,150,243,1)',
+            borderWidth: 2,
+            tension: 0.3
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+    }
+    
+    // Cost Pie Chart - show breakdown by project
+    const costPieCanvasEl = document.getElementById('costPieChart');
+    if (costPieCanvasEl) {
+      const ctxCostPie = costPieCanvasEl.getContext('2d');
+      const costLabels = projectData.length > 0 ? 
+        projectData.map(p => `${p.name} Costs`) : 
+        ['No Data'];
+      const costData = projectData.length > 0 ? 
+        projectData.map(p => p.costs) : 
+        [0];
+        
+      costPieChart = new Chart(ctxCostPie, {
+        type: 'pie',
+        data: {
+          labels: costLabels,
+          datasets: [{
+            data: costData,
+            backgroundColor: ['#f39c12', '#3498db', '#e74c3c', '#2ecc71', '#9b59b6']
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+    }
+  } else {
+    console.warn('Chart.js not available, skipping P&L charts');
+  }
 }
 function getTotalInvestment() {
   return (
@@ -805,52 +825,116 @@ document.getElementById('scenarioForm').onsubmit = (e) => {
 
 // --- Summary Report (for PDF/Excel) ---
 function generateSummaryReport() {
-  const padel = window.padelData || {};
-  const gym = gymIncluded() && window.gymData ? window.gymData : {};
- document.getElementById('reportContent').innerHTML = `
-  <h3>Key Financials</h3>
-  <ul>
-    <li><b>Padel Revenue:</b> €${(padel.revenue || 0).toLocaleString()}</li>
-    <li><b>Padel Net Profit:</b> €${(padel.profit || 0).toLocaleString()}</li>
-    <li><b>Gym Revenue:</b> €${(gym.revenue || 0).toLocaleString()}</li>
-    <li><b>Gym Net Profit:</b> €${(gym.profit || 0).toLocaleString()}</li>
-    ${document.getElementById('gymRamp')?.checked ? `<li><b>Ramp-Up:</b> ${getNumberInputValue('rampDuration')} months at ${getNumberInputValue('rampEffect')}%</li>` : ""}
-    <li><b>Total Investment:</b> €${getTotalInvestment().toLocaleString()}</li>
-  </ul>
-    <div><canvas id="summaryPnL" height="150"></canvas></div>
-    <div><canvas id="summaryROI" height="150"></canvas></div>
-    <h3>Assumptions</h3>
-    <ul>
-      <li>Padel Peak Utilization: ${getNumberInputValue('padelPeakUtil')}%</li>
-      <li>Padel Peak Rate: €${getNumberInputValue('padelPeakRate')}</li>
-      <li>Gym Weekly Members: ${getNumberInputValue('gymWeekMembers')}</li>
-      <li>Gym Weekly Fee: €${getNumberInputValue('gymWeekFee')}</li>
-    </ul>
-  `;
-  if (window.summaryPnLChart) window.summaryPnLChart.destroy();
-  if (window.summaryROIChart) window.summaryROIChart.destroy();
-  window.summaryPnLChart = new Chart(document.getElementById('summaryPnL').getContext('2d'), {
-    type: 'bar',
-    data: {
-      labels: ['Padel Profit', 'Gym Profit'],
-      datasets: [{label: 'Net Profit', data: [padel.profit || 0, gymIncluded() ? (gym.profit || 0) : 0], backgroundColor: ['#4caf50', '#2980b9']}]
-    },
-    options: { responsive: true, maintainAspectRatio: false }
+  // Get selected projects from centralized state
+  const selectedProjects = window.selectionStateManager ? 
+    window.selectionStateManager.getSelectedProjectTypes() : [];
+  
+  let totalRevenue = 0;
+  let totalCosts = 0;
+  let totalProfit = 0;
+  let totalInvestment = 0;
+  const projectData = [];
+  
+  // Calculate totals for selected projects using centralized calculation engine
+  selectedProjects.forEach(projectId => {
+    const result = window.calculationEngine?.getCalculation(projectId);
+    if (result) {
+      totalRevenue += result.revenue.annual;
+      totalCosts += result.costs.annual;
+      totalProfit += result.profit;
+      totalInvestment += result.investment || 0;
+      
+      projectData.push({
+        name: result.typeName,
+        revenue: result.revenue.annual,
+        costs: result.costs.annual,
+        profit: result.profit,
+        investment: result.investment || 0
+      });
+    }
   });
-  window.summaryROIChart = new Chart(document.getElementById('summaryROI').getContext('2d'), {
-    type: 'pie',
-    data: {
-      labels: ['Padel Investment', 'Gym Investment'],
-      datasets: [{
-        data: [
-          getNumberInputValue('padelGround') + getNumberInputValue('padelStructure') + (getNumberInputValue('padelCourts') * getNumberInputValue('padelCourtCost')) + getNumberInputValue('padelAmenities'),
-          gymIncluded() ? (getNumberInputValue('gymEquip') + getNumberInputValue('gymFloor') + getNumberInputValue('gymAmen')) : 0
-        ],
-        backgroundColor: ['#f39c12', '#3498db']
-      }]
-    },
-    options: { responsive: true, maintainAspectRatio: false }
-  });
+  
+  const reportContent = document.getElementById('reportContent');
+  if (reportContent) {
+    if (selectedProjects.length === 0) {
+      reportContent.innerHTML = `
+        <h3>Investment Summary Report</h3>
+        <p><em>No projects selected. Choose projects from the dropdown above to generate a summary report.</em></p>
+      `;
+      return;
+    }
+    
+    const projectsList = selectedProjects.map(id => {
+      const project = window.projectTypeManager?.getProjectType(id);
+      return project ? project.name : id;
+    }).join(', ');
+    
+    reportContent.innerHTML = `
+      <h3>Investment Summary Report</h3>
+      <p><strong>Selected Projects:</strong> ${projectsList}</p>
+      
+      <h4>Key Financials</h4>
+      <ul>
+        <li><b>Total Revenue:</b> €${totalRevenue.toLocaleString()}</li>
+        <li><b>Total Costs:</b> €${totalCosts.toLocaleString()}</li>
+        <li><b>Net Profit:</b> €${totalProfit.toLocaleString()}</li>
+        <li><b>Total Investment:</b> €${totalInvestment.toLocaleString()}</li>
+      </ul>
+      
+      <h4>Project Breakdown</h4>
+      <ul>
+        ${projectData.map(project => `
+          <li><b>${project.name}:</b> €${project.revenue.toLocaleString()} revenue, €${project.profit.toLocaleString()} profit</li>
+        `).join('')}
+      </ul>
+      
+      <div><canvas id="summaryPnL" height="150"></canvas></div>
+      <div><canvas id="summaryROI" height="150"></canvas></div>
+    `;
+    
+    // Skip chart generation if Chart is not available (CDN blocked)
+    if (typeof Chart === 'undefined') {
+      console.warn('Chart.js not available, skipping summary charts');
+      return;
+    }
+    
+    // Destroy existing charts
+    if (window.summaryPnLChart) window.summaryPnLChart.destroy();
+    if (window.summaryROIChart) window.summaryROIChart.destroy();
+    
+    // Create profit chart
+    const pnlCanvas = document.getElementById('summaryPnL');
+    if (pnlCanvas) {
+      window.summaryPnLChart = new Chart(pnlCanvas.getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: projectData.map(p => p.name),
+          datasets: [{
+            label: 'Net Profit (€)', 
+            data: projectData.map(p => p.profit), 
+            backgroundColor: projectData.map((_, i) => ['#4caf50', '#2980b9', '#f39c12', '#e74c3c', '#9b59b6'][i % 5])
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+    }
+    
+    // Create investment breakdown chart
+    const roiCanvas = document.getElementById('summaryROI');
+    if (roiCanvas && projectData.length > 0) {
+      window.summaryROIChart = new Chart(roiCanvas.getContext('2d'), {
+        type: 'pie',
+        data: {
+          labels: projectData.map(p => `${p.name} Investment`),
+          datasets: [{
+            data: projectData.map(p => p.investment),
+            backgroundColor: projectData.map((_, i) => ['#f39c12', '#3498db', '#e74c3c', '#2ecc71', '#9b59b6'][i % 5])
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+    }
+  }
 }
 // --- Export as PDF ---
 window.exportPDF = function() {
@@ -1058,9 +1142,9 @@ window.onload = function () {
   });
   document.getElementById('exportGanttCSVBtn')?.addEventListener('click', exportGanttCSV);
 
-  // Initialize legacy calculations for backward compatibility
-  calculatePadel();
-  calculateGym();
+  // Legacy calculations removed - data should only appear when user selects projects
+  // calculatePadel();
+  // calculateGym();
   renderScenarioList?.();
   renderScenarioDiff?.();
   renderGanttTaskList();
@@ -1461,27 +1545,56 @@ function exportInvestmentSummary() {
 }
 
 function updateCapExSummary() {
-  const totalInvestment = getTotalInvestment();
-  const padel = window.padelData || {};
-  const gym = gymIncluded() && window.gymData ? window.gymData : {};
+  // Get selected projects from centralized state
+  const selectedProjects = window.selectionStateManager ? 
+    window.selectionStateManager.getSelectedProjectTypes() : [];
+  
+  let totalInvestment = 0;
+  const investmentBreakdown = [];
+  
+  // Calculate investment for selected projects using centralized calculation engine
+  selectedProjects.forEach(projectId => {
+    const result = window.calculationEngine?.getCalculation(projectId);
+    if (result && result.investment) {
+      totalInvestment += result.investment;
+      
+      // Add investment breakdown for this project
+      investmentBreakdown.push({
+        project: result.typeName,
+        amount: result.investment,
+        percentage: 0 // Will calculate after we have total
+      });
+    }
+  });
+  
+  // Calculate percentages
+  investmentBreakdown.forEach(item => {
+    item.percentage = totalInvestment > 0 ? ((item.amount / totalInvestment) * 100).toFixed(1) : 0;
+  });
   
   const capexSummary = document.getElementById('capexSummary');
   if (capexSummary) {
-    capexSummary.innerHTML = `
-      <h3>Capital Expenditure Summary</h3>
-      <p><b>Total Investment:</b> €${totalInvestment.toLocaleString()}</p>
-      <p><b>Padel Investment:</b> €${(
-        getNumberInputValue('padelGround') +
-        getNumberInputValue('padelStructure') +
-        (getNumberInputValue('padelCourts') * getNumberInputValue('padelCourtCost')) +
-        getNumberInputValue('padelAmenities')
-      ).toLocaleString()}</p>
-      <p><b>Gym Investment:</b> €${(
-        getNumberInputValue('gymEquip') +
-        getNumberInputValue('gymFloor') +
-        getNumberInputValue('gymAmen')
-      ).toLocaleString()}</p>
-    `;
+    if (selectedProjects.length === 0) {
+      capexSummary.innerHTML = `
+        <h3>Capital Expenditure Summary</h3>
+        <p><em>No projects selected. Choose projects from the dropdown above to see CapEx analysis.</em></p>
+      `;
+    } else {
+      const projectsList = selectedProjects.length > 0 ? 
+        selectedProjects.map(id => {
+          const project = window.projectTypeManager?.getProjectType(id);
+          return project ? project.name : id;
+        }).join(', ') : 'No projects selected';
+        
+      capexSummary.innerHTML = `
+        <h3>Capital Expenditure Summary</h3>
+        <p><strong>Selected Projects:</strong> ${projectsList}</p>
+        <p><b>Total Investment:</b> €${totalInvestment.toLocaleString()}</p>
+        ${investmentBreakdown.map(item => 
+          `<p><b>${item.project} Investment:</b> €${item.amount.toLocaleString()} (${item.percentage}%)</p>`
+        ).join('')}
+      `;
+    }
   }
   
   // Update CapEx breakdown table
@@ -1489,29 +1602,18 @@ function updateCapExSummary() {
   if (capexTable) {
     capexTable.innerHTML = '';
     
-    const investments = [
-      {category: 'Ground', project: 'Padel', amount: getNumberInputValue('padelGround')},
-      {category: 'Structure', project: 'Padel', amount: getNumberInputValue('padelStructure')},
-      {category: 'Courts', project: 'Padel', amount: getNumberInputValue('padelCourts') * getNumberInputValue('padelCourtCost')},
-      {category: 'Amenities', project: 'Padel', amount: getNumberInputValue('padelAmenities')},
-      {category: 'Equipment', project: 'Gym', amount: getNumberInputValue('gymEquip')},
-      {category: 'Flooring', project: 'Gym', amount: getNumberInputValue('gymFloor')},
-      {category: 'Amenities', project: 'Gym', amount: getNumberInputValue('gymAmen')}
-    ];
-    
-    investments.forEach(item => {
-      if (item.amount > 0) {
-        const percentage = ((item.amount / totalInvestment) * 100).toFixed(1);
+    if (investmentBreakdown.length > 0) {
+      investmentBreakdown.forEach(item => {
         capexTable.insertAdjacentHTML('beforeend',
           `<tr>
-            <td>${item.category}</td>
+            <td>Total Investment</td>
             <td>${item.project}</td>
             <td>€${item.amount.toLocaleString()}</td>
-            <td>${percentage}%</td>
+            <td>${item.percentage}%</td>
           </tr>`
         );
-      }
-    });
+      });
+    }
   }
 }
 
@@ -1553,40 +1655,35 @@ function updateStaffingResourcing() {
     }
   });
   
-  // Fallback to legacy calculation if no centralized state
+  // Show blank data when no projects are selected (removed fallback to legacy calculations)
   if (selectedProjects.length === 0) {
-    const padel = window.padelData || {};
-    const gym = gymIncluded() && window.gymData ? window.gymData : {};
-    totalStaffCosts = (padel.costs || 0) + (gym.costs || 0);
-    
-    // Add legacy staffing data
-    const legacyStaffingData = [
-      {role: 'Manager', project: 'Padel', count: getNumberInputValue('padelFtMgr'), salary: getNumberInputValue('padelFtMgrSal'), utilization: '100%'},
-      {role: 'Reception', project: 'Padel', count: getNumberInputValue('padelFtRec'), salary: getNumberInputValue('padelFtRecSal'), utilization: '100%'},
-      {role: 'Coach (FT)', project: 'Padel', count: getNumberInputValue('padelFtCoach'), salary: getNumberInputValue('padelFtCoachSal'), utilization: '100%'},
-      {role: 'Coach (PT)', project: 'Padel', count: getNumberInputValue('padelPtCoach'), salary: getNumberInputValue('padelPtCoachSal'), utilization: '50%'},
-      {role: 'Trainer (FT)', project: 'Gym', count: getNumberInputValue('gymFtTrainer'), salary: getNumberInputValue('gymFtTrainerSal'), utilization: '100%'},
-      {role: 'Trainer (PT)', project: 'Gym', count: getNumberInputValue('gymPtTrainer'), salary: getNumberInputValue('gymPtTrainerSal'), utilization: '50%'}
-    ];
-    
-    staffingData.push(...legacyStaffingData.filter(item => item.count > 0));
+    totalStaffCosts = 0;
+    // No legacy staffing data added - keep staffingData array empty
   }
   
   const staffingSummary = document.getElementById('staffingSummary');
   if (staffingSummary) {
-    const projectsList = selectedProjects.length > 0 ? 
-      selectedProjects.map(id => {
+    if (selectedProjects.length === 0) {
+      staffingSummary.innerHTML = `
+        <h3>Staffing & Resource Summary</h3>
+        <p><strong>Selected Projects:</strong> No projects selected</p>
+        <p><em>Choose projects from the dropdown above to see staffing analysis.</em></p>
+        <p><b>Total Annual Staffing Costs:</b> €0</p>
+        <p><b>Average Monthly Staffing:</b> €0</p>
+      `;
+    } else {
+      const projectsList = selectedProjects.map(id => {
         const project = window.projectTypeManager?.getProjectType(id);
         return project ? project.name : id;
-      }).join(', ') : 
-      'Legacy Projects (Padel/Gym)';
-      
-    staffingSummary.innerHTML = `
-      <h3>Staffing & Resource Summary</h3>
-      <p><strong>Selected Projects:</strong> ${projectsList}</p>
-      <p><b>Total Annual Staffing Costs:</b> €${totalStaffCosts.toLocaleString()}</p>
-      <p><b>Average Monthly Staffing:</b> €${(totalStaffCosts / 12).toLocaleString()}</p>
-    `;
+      }).join(', ');
+        
+      staffingSummary.innerHTML = `
+        <h3>Staffing & Resource Summary</h3>
+        <p><strong>Selected Projects:</strong> ${projectsList}</p>
+        <p><b>Total Annual Staffing Costs:</b> €${totalStaffCosts.toLocaleString()}</p>
+        <p><b>Average Monthly Staffing:</b> €${(totalStaffCosts / 12).toLocaleString()}</p>
+      `;
+    }
   }
   
   // Update staffing breakdown table
