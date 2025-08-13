@@ -428,23 +428,42 @@ window.updateRampEffectLabel = function(val) {
   document.getElementById('rampEffectLabel').textContent = `${val}%`;
 };
 function updateROI() {
-  const padel = window.padelData || { revenue: 0, costs: 0, profit: 0 };
-  const gym = gymIncludedROI() && window.gymData ? window.gymData : { revenue: 0, costs: 0, profit: 0 };
+  // Use centralized state manager to get selected projects
+  const selectedProjects = window.selectionStateManager ? 
+    window.selectionStateManager.getSelectedProjectTypes() : [];
+  
   const revAdjust = getNumberInputValue('roiRevAdjust') / 100;
   const costAdjust = getNumberInputValue('roiCostAdjust') / 100;
-  const padelAdjProfit = (padel.revenue * revAdjust) - (padel.costs * costAdjust);
-  const gymAdjProfit = (gym.revenue * revAdjust) - (gym.costs * costAdjust);
-  const padelInvestment =
-    getNumberInputValue('padelGround') +
-    getNumberInputValue('padelStructure') +
-    (getNumberInputValue('padelCourts') * getNumberInputValue('padelCourtCost')) +
-    getNumberInputValue('padelAmenities');
-  const gymInvestment =
-    getNumberInputValue('gymEquip') +
-    getNumberInputValue('gymFloor') +
-    getNumberInputValue('gymAmen');
-  const totalInvestment = padelInvestment + (gymIncludedROI() ? gymInvestment : 0);
-  const annualProfit = padelAdjProfit + (gymIncludedROI() ? gymAdjProfit : 0);
+  
+  let totalRevenue = 0;
+  let totalCosts = 0;
+  let totalInvestment = 0;
+  let projectData = [];
+  
+  // Calculate totals for selected projects using centralized calculation engine
+  selectedProjects.forEach(projectId => {
+    const result = window.calculationEngine?.getCalculation(projectId);
+    if (result) {
+      const adjustedRevenue = result.revenue.annual * revAdjust;
+      const adjustedCosts = result.costs.annual * costAdjust;
+      const adjustedProfit = adjustedRevenue - adjustedCosts;
+      
+      totalRevenue += adjustedRevenue;
+      totalCosts += adjustedCosts;
+      totalInvestment += result.investment.total;
+      
+      projectData.push({
+        id: projectId,
+        name: result.typeName,
+        revenue: adjustedRevenue,
+        costs: adjustedCosts,
+        profit: adjustedProfit,
+        investment: result.investment.total
+      });
+    }
+  });
+  
+  const annualProfit = totalRevenue - totalCosts;
   const paybackYears = annualProfit > 0 ? Math.ceil(totalInvestment / annualProfit) : '∞';
   document.getElementById('yearsToROIText').innerHTML = `<div class="roi-summary">Estimated Payback Period: <b>${paybackYears} year(s)</b></div>`;
   let cumulativeProfit = 0;
@@ -454,85 +473,111 @@ function updateROI() {
     return cumulativeProfit;
   });
   const paybackBody = document.querySelector('#paybackTable tbody');
-  paybackBody.innerHTML = '';
-  cumulativeProfits.forEach((val, idx) => {
-    paybackBody.insertAdjacentHTML('beforeend', `<tr><td>${years[idx]}</td><td>€${val.toFixed(2)}</td></tr>`);
-  });
+  if (paybackBody) {
+    paybackBody.innerHTML = '';
+    cumulativeProfits.forEach((val, idx) => {
+      paybackBody.insertAdjacentHTML('beforeend', `<tr><td>${years[idx]}</td><td>€${val.toFixed(2)}</td></tr>`);
+    });
+  }
+  // Skip chart generation if Chart is not available (CDN blocked)
+  if (typeof Chart === 'undefined') {
+    console.warn('Chart.js not available, skipping ROI charts');
+    return;
+  }
+  
   if (roiLineChart) roiLineChart.destroy();
   if (roiBarChart) roiBarChart.destroy();
   if (roiPieChart) roiPieChart.destroy();
   if (roiBreakEvenChart) roiBreakEvenChart.destroy();
+  
+  // Only create charts if we have canvas elements
+  const lineCanvas = document.getElementById('roiLineChart');
+  const barCanvas = document.getElementById('roiBarChart'); 
+  const pieCanvas = document.getElementById('roiPieChart');
+  const breakEvenCanvas = document.getElementById('roiBreakEvenChart');
+  
   // Line Chart: Cumulative Profit Over Time
-  const ctxRoiLine = document.getElementById('roiLineChart').getContext('2d');
-  roiLineChart = new Chart(ctxRoiLine, {
-    type: 'line',
-    data: {
-      labels: years.map(y => `Year ${y}`),
-      datasets: [{
-        label: 'Cumulative Profit (€)',
-        data: cumulativeProfits,
-        borderColor: '#27ae60',
-        fill: false,
-        tension: 0.2
-      }]
-    },
-    options: { responsive: true, maintainAspectRatio: false }
-  });
-  // Bar Chart: Annual Profit Breakdown Padel vs Gym
-  const ctxRoiBar = document.getElementById('roiBarChart').getContext('2d');
-  roiBarChart = new Chart(ctxRoiBar, {
-    type: 'bar',
-    data: {
-      labels: ['Padel', 'Gym'],
-      datasets: [{
-        label: 'Annual Profit (€)',
-        data: [padelAdjProfit, gymIncludedROI() ? gymAdjProfit : 0],
-        backgroundColor: ['#e67e22', '#2980b9']
-      }]
-    },
-    options: { responsive: true, maintainAspectRatio: false }
-  });
-  // Pie Chart: Investment Breakdown
-  const ctxRoiPie = document.getElementById('roiPieChart').getContext('2d');
-  roiPieChart = new Chart(ctxRoiPie, {
-    type: 'pie',
-    data: {
-      labels: ['Padel Investment', 'Gym Investment'],
-      datasets: [{
-        data: [padelInvestment, gymIncludedROI() ? gymInvestment : 0],
-        backgroundColor: ['#c0392b', '#2980b9']
-      }]
-    },
-    options: { responsive: true, maintainAspectRatio: false }
-  });
-  // Break-even Chart: Cumulative Profit vs Investment
-  const ctxBreakEven = document.getElementById('roiBreakEvenChart').getContext('2d');
-  roiBreakEvenChart = new Chart(ctxBreakEven, {
-    type: 'line',
-    data: {
-      labels: years.map(y => `Year ${y}`),
-      datasets: [
-        {
-          label: 'Cumulative Profit',
+  if (lineCanvas) {
+    const ctxRoiLine = lineCanvas.getContext('2d');
+    roiLineChart = new Chart(ctxRoiLine, {
+      type: 'line',
+      data: {
+        labels: years.map(y => `Year ${y}`),
+        datasets: [{
+          label: 'Cumulative Profit (€)',
           data: cumulativeProfits,
           borderColor: '#27ae60',
           fill: false,
-          tension: 0.2,
-          pointRadius: 3,
-        },
-        {
-          label: 'Total Investment',
-          data: new Array(years.length).fill(totalInvestment),
-          borderColor: '#c0392b',
-          borderDash: [10, 5],
-          fill: false,
-          pointRadius: 0,
-          tension: 0
-        }
-      ]
-    },
-    options: { responsive: true, maintainAspectRatio: false }
-  });
+          tension: 0.2
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  }
+  
+  // Bar Chart: Annual Profit Breakdown by Project Type
+  if (barCanvas && projectData.length > 0) {
+    const ctxRoiBar = barCanvas.getContext('2d');
+    roiBarChart = new Chart(ctxRoiBar, {
+      type: 'bar',
+      data: {
+        labels: projectData.map(p => p.name),
+        datasets: [{
+          label: 'Annual Profit (€)',
+          data: projectData.map(p => p.profit),
+          backgroundColor: projectData.map((_, i) => ['#e67e22', '#2980b9', '#8e44ad', '#27ae60', '#f39c12'][i % 5])
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  }
+  
+  // Pie Chart: Investment Breakdown
+  if (pieCanvas && projectData.length > 0) {
+    const ctxRoiPie = pieCanvas.getContext('2d');
+    roiPieChart = new Chart(ctxRoiPie, {
+      type: 'pie',
+      data: {
+        labels: projectData.map(p => `${p.name} Investment`),
+        datasets: [{
+          data: projectData.map(p => p.investment),
+          backgroundColor: projectData.map((_, i) => ['#c0392b', '#2980b9', '#8e44ad', '#27ae60', '#f39c12'][i % 5])
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  }
+  
+  // Break-even Chart: Cumulative Profit vs Investment
+  if (breakEvenCanvas) {
+    const ctxBreakEven = breakEvenCanvas.getContext('2d');
+    roiBreakEvenChart = new Chart(ctxBreakEven, {
+      type: 'line',
+      data: {
+        labels: years.map(y => `Year ${y}`),
+        datasets: [
+          {
+            label: 'Cumulative Profit',
+            data: cumulativeProfits,
+            borderColor: '#27ae60',
+            fill: false,
+            tension: 0.2,
+            pointRadius: 3,
+          },
+          {
+            label: 'Total Investment',
+            data: new Array(years.length).fill(totalInvestment),
+            borderColor: '#c0392b',
+            borderDash: [10, 5],
+            fill: false,
+            pointRadius: 0,
+            tension: 0
+          }
+        ]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  }
   // Update ROI KPIs
   const roiKPIs = document.getElementById('roiKPIs');
   const roiPercentages = [
@@ -548,29 +593,117 @@ window.updateROI = updateROI;
 
 // --- Tornado Chart (Sensitivity Analysis) ---
 function drawTornadoChart() {
-  const keyVars = [
-    { label: 'Padel Utilization', id: 'padelPeakUtil', base: getNumberInputValue('padelPeakUtil') },
-    { label: 'Padel Fee', id: 'padelPeakRate', base: getNumberInputValue('padelPeakRate') },
-    { label: 'Padel Staff Salary', id: 'padelFtMgrSal', base: getNumberInputValue('padelFtMgrSal') },
-    { label: 'Gym Utilization', id: 'gymWeekMembers', base: getNumberInputValue('gymWeekMembers') },
-    { label: 'Gym Fee', id: 'gymWeekFee', base: getNumberInputValue('gymWeekFee') },
-    { label: 'Gym Staff Salary', id: 'gymFtTrainerSal', base: getNumberInputValue('gymFtTrainerSal') }
-  ];
-  const impacts = keyVars.map(v => {
-    const orig = getNumberInputValue(v.id);
-    let minVal = Math.max(0, orig * 0.8), maxVal = orig * 1.2;
-    document.getElementById(v.id).value = minVal;
-    calculatePadel(); calculateGym();
-    const low = (window.padelData?.profit || 0) + (gymIncluded() ? (window.gymData?.profit || 0) : 0);
-    document.getElementById(v.id).value = maxVal;
-    calculatePadel(); calculateGym();
-    const high = (window.padelData?.profit || 0) + (gymIncluded() ? (window.gymData?.profit || 0) : 0);
-    document.getElementById(v.id).value = orig;
-    calculatePadel(); calculateGym();
-    return Math.abs(high - low);
+  // Skip if Chart is not available (CDN blocked)
+  if (typeof Chart === 'undefined') {
+    console.warn('Chart.js not available, skipping tornado chart');
+    return;
+  }
+
+  // Get currently selected projects from centralized state
+  const selectedProjects = window.selectionStateManager ? 
+    window.selectionStateManager.getSelectedProjectTypes() : [];
+
+  if (selectedProjects.length === 0) {
+    console.log('No projects selected for tornado chart');
+    return;
+  }
+
+  // Get dynamic key variables from selected projects
+  const keyVars = [];
+  
+  selectedProjects.forEach(projectId => {
+    const projectType = window.projectTypeManager?.getProjectType(projectId);
+    if (!projectType) return;
+    
+    // Get variables for this project type from its form
+    const projectFieldPrefix = projectId;
+    
+    // Add project-specific variables based on project type
+    if (projectId === 'padel') {
+      keyVars.push(
+        { label: 'Padel Utilization', id: 'padelPeakUtil', projectId: 'padel' },
+        { label: 'Padel Peak Rate', id: 'padelPeakRate', projectId: 'padel' },
+        { label: 'Padel Staff Salary', id: 'padelFtMgrSal', projectId: 'padel' }
+      );
+    } else if (projectId === 'gym') {
+      keyVars.push(
+        { label: 'Gym Weekly Members', id: 'gymWeekMembers', projectId: 'gym' },
+        { label: 'Gym Weekly Fee', id: 'gymWeekFee', projectId: 'gym' },
+        { label: 'Gym Staff Salary', id: 'gymFtTrainerSal', projectId: 'gym' }
+      );
+    } else {
+      // For dynamic projects, get key revenue and cost variables from form
+      const formData = window.dynamicUI?.getFormData(projectId);
+      if (formData) {
+        // Try to find key revenue variables
+        Object.keys(formData).forEach(key => {
+          if (key.includes('Rate') || key.includes('Fee') || key.includes('Price') || key.includes('Members')) {
+            keyVars.push({
+              label: `${projectType.name} ${key}`,
+              id: key,
+              projectId: projectId
+            });
+          }
+        });
+      }
+    }
   });
+
+  // If no key variables found, use generic approach
+  if (keyVars.length === 0) {
+    console.log('No key variables found for tornado chart');
+    return;
+  }
+
+  // Calculate sensitivity impacts
+  const impacts = keyVars.map(v => {
+    const element = document.getElementById(v.id);
+    if (!element) return 0;
+    
+    const orig = getNumberInputValue(v.id);
+    if (orig === 0) return 0;
+    
+    let minVal = Math.max(0, orig * 0.8);
+    let maxVal = orig * 1.2;
+    
+    // Calculate baseline profit
+    let baselineProfit = 0;
+    selectedProjects.forEach(projectId => {
+      const result = window.calculationEngine?.getCalculation(projectId);
+      if (result) baselineProfit += result.profit;
+    });
+    
+    // Test low value impact
+    element.value = minVal;
+    triggerCalculationUpdate(v.projectId);
+    let lowProfit = 0;
+    selectedProjects.forEach(projectId => {
+      const result = window.calculationEngine?.getCalculation(projectId);
+      if (result) lowProfit += result.profit;
+    });
+    
+    // Test high value impact  
+    element.value = maxVal;
+    triggerCalculationUpdate(v.projectId);
+    let highProfit = 0;
+    selectedProjects.forEach(projectId => {
+      const result = window.calculationEngine?.getCalculation(projectId);
+      if (result) highProfit += result.profit;
+    });
+    
+    // Restore original value
+    element.value = orig;
+    triggerCalculationUpdate(v.projectId);
+    
+    return Math.abs(highProfit - lowProfit);
+  });
+
+  // Create tornado chart
+  const canvas = document.getElementById('tornadoChart');
+  if (!canvas) return;
+
   if (tornadoChart) tornadoChart.destroy();
-  const ctx = document.getElementById('tornadoChart').getContext('2d');
+  const ctx = canvas.getContext('2d');
   tornadoChart = new Chart(ctx, {
     type: 'bar',
     data: {
@@ -583,6 +716,17 @@ function drawTornadoChart() {
     },
     options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false }
   });
+}
+
+// Helper function to trigger calculation updates for specific project types
+function triggerCalculationUpdate(projectId) {
+  if (projectId === 'padel' && typeof calculatePadel === 'function') {
+    calculatePadel();
+  } else if (projectId === 'gym' && typeof calculateGym === 'function') {
+    calculateGym();
+  } else if (window.dynamicUI && typeof window.dynamicUI.updateCalculations === 'function') {
+    window.dynamicUI.updateCalculations(projectId);
+  }
 }
 
 // --- Scenario Management ---
