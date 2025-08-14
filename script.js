@@ -45,8 +45,18 @@ function calculateStaffCosts(ids) {
 let pnlChart, profitTrendChart, costPieChart, roiLineChart, roiBarChart, roiPieChart, roiBreakEvenChart, tornadoChart;
 function capitalize(str) { return str.charAt(0).toUpperCase() + str.slice(1); }
 
-// --- Tab Navigation & Scroll ---
+// --- Vista Tab Navigation & Scroll (excludes Nova/business-analytics) ---
 function showTab(tabId) {
+  // Prevent Vista from controlling Nova (business-analytics) tab
+  if (tabId === 'business-analytics') {
+    console.log('Nova tab requested - delegating to Nova system');
+    if (window.showNovaTab) {
+      window.showNovaTab();
+    }
+    return;
+  }
+  
+  // Vista tab navigation for all other tabs
   document.querySelectorAll('.tab-content').forEach(sec => {
     sec.classList.toggle('hidden', sec.id !== tabId);
   });
@@ -56,7 +66,12 @@ function showTab(tabId) {
     if (isActive) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
   });
   
-  // Handle specific tab initializations
+  // Notify Nova that it's no longer active
+  if (window.Nova?.tabController) {
+    window.Nova.tabController.deactivateNova();
+  }
+  
+  // Handle specific Vista tab initializations
   if (tabId === 'investment-model') {
     // Show P&L sub-tab by default
     showSubTab('pnl');
@@ -79,7 +94,7 @@ function showTab(tabId) {
     renderScenarioDiff();
   }
   
-  // Legacy tab support
+  // Legacy Vista tab support
   if (tabId === 'pnl') updatePnL();
   if (tabId === 'roi') { updateROI(); drawTornadoChart(); }
   if (tabId === 'summary') generateSummaryReport();
@@ -1109,27 +1124,29 @@ window.onload = function () {
   // Initialize centralized state management system
   initializeCentralizedStateManagement();
   
-  // Set up tab navigation
+  // Set up Vista tab navigation (excluding Nova/business-analytics)
   document.querySelectorAll('nav.tabs button').forEach(btn => {
     btn.addEventListener('click', function () {
       const tabId = this.dataset.tab;
-      if (tabId) {
-        if (window.dynamicUI && typeof window.dynamicUI.showTab === 'function') {
-          window.dynamicUI.showTab(tabId);
-        } else {
-          showTab(tabId);
-        }
+      if (tabId && tabId !== 'business-analytics') {
+        // Vista tabs use the original showTab function
+        showTab(tabId);
       }
+      // Note: Nova (business-analytics) tab handled independently by nova-init.js
     });
   });
 
-  // Initialize business analytics interface
-  if (window.dynamicUI) {
-    window.dynamicUI.generateBusinessTypeSelector('business-analytics');
+  // Do not initialize dynamic UI for business analytics - Nova handles this independently
+  // The business-analytics tab is now managed by Nova system
+  
+  // Show default tab based on Nova availability
+  if (window.Nova?.initializer?.isInitialized()) {
+    // If Nova is ready, show it
+    window.showNovaTab();
+  } else {
+    // Otherwise show investment model as default Vista tab
+    showTab('investment-model');
   }
-
-  // Show business analytics by default
-  showTab('business-analytics');
 
   // Legacy event listeners (kept for backward compatibility)
   document.getElementById('calculatePadelBtn')?.addEventListener('click', calculatePadel);
